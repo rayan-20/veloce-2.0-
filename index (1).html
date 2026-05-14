@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VELOCE — Supercars & Hypercars</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600;1,700&family=Barlow+Condensed:wght@300;400;500;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root {
+  --navy:#040810; --navy-l:#070d1a; --navy-ll:#0a1220;
+  --blue:#0B5FFF; --blue-d:#0845CC; --blue-l:#3D7FFF;
+  --mist:#8A9BBF; --white:#EEF2FF;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--navy);color:var(--mist);font-family:'Barlow',sans-serif;overflow-x:hidden;}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--navy);}
+::-webkit-scrollbar-thumb{background:var(--blue);border-radius:2px;}
+
+/* ─── NOISE OVERLAY ─── */
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");pointer-events:none;z-index:9998;opacity:.4;}
+
+/* ─── TOP GLOW LINE ─── */
+.glow-line{position:fixed;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--blue),var(--blue-l),var(--blue),transparent);z-index:1001;box-shadow:0 0 14px 3px rgba(11,95,255,.55);}
+
+/* ─── LOADING SCREEN ─── */
+#loader{position:fixed;inset:0;background:var(--navy);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .8s ease, visibility .8s ease;}
+#loader.hide{opacity:0;visibility:hidden;}
+.loader-logo{display:flex;align-items:center;gap:14px;margin-bottom:3rem;}
+.loader-diamond{width:36px;height:36px;background:var(--blue);clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);animation:pulse-diamond 1.5s ease-in-out infinite;box-shadow:0 0 30px rgba(11,95,255,.7);}
+@keyframes pulse-diamond{0%,100%{transform:scale(1);box-shadow:0 0 20px rgba(11,95,255,.5);}50%{transform:scale(1.15);box-shadow:0 0 40px rgba(11,95,255,.9);}}
+.loader-wordmark{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:2rem;letter-spacing:.35em;color:var(--white);}
+.loader-bar-wrap{width:200px;height:1px;background:rgba(11,95,255,.15);position:relative;overflow:hidden;}
+.loader-bar{position:absolute;left:-100%;top:0;height:100%;width:100%;background:linear-gradient(90deg,transparent,var(--blue),var(--blue-l),var(--blue),transparent);animation:load-sweep 1.8s ease-in-out infinite;}
+@keyframes load-sweep{0%{left:-100%;}100%{left:100%;}}
+.loader-text{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;letter-spacing:.3em;color:var(--mist);margin-top:1rem;opacity:.6;}
+
+/* ─── PAGE TRANSITIONS ─── */
+.page{display:none;animation:fadeUp .6s cubic-bezier(.4,0,.2,1) both;}
+.page.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+
+/* ─── NAVBAR ─── */
+.navbar{position:fixed;top:1px;left:0;right:0;z-index:900;padding:0 2.5rem;transition:background .4s,backdrop-filter .4s,border-color .4s;}
+.navbar.scrolled{background:rgba(4,8,16,.93);backdrop-filter:blur(24px);border-bottom:1px solid rgba(11,95,255,.15);}
+.nav-inner{max-width:1440px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:72px;}
+.logo-mark{width:26px;height:26px;background:var(--blue);clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);box-shadow:0 0 16px rgba(11,95,255,.7);transition:transform .3s;}
+.logo-mark:hover{transform:rotate(45deg);}
+.logo-text{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.2rem;letter-spacing:.28em;color:var(--white);}
+.nav-link{font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mist);position:relative;padding-bottom:4px;transition:color .3s;cursor:pointer;background:none;border:none;}
+.nav-link::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1px;background:var(--blue);transition:width .3s;box-shadow:0 0 6px var(--blue);}
+.nav-link:hover{color:var(--white);}
+.nav-link:hover::after{width:100%;}
+
+/* ─── MEGA MENU ─── */
+.nav-item{position:relative;}
+.mega{position:absolute;top:calc(100% + 12px);left:50%;transform:translateX(-50%);background:rgba(4,8,16,.98);border:1px solid rgba(11,95,255,.25);border-top:2px solid var(--blue);backdrop-filter:blur(24px);padding:1.5rem;min-width:440px;display:none;grid-template-columns:1fr 1fr;gap:.5rem;box-shadow:0 24px 60px rgba(0,0,0,.8);}
+.nav-item:hover .mega{display:grid;}
+.mega-item{padding:.75rem 1rem;border:1px solid transparent;transition:all .3s;cursor:pointer;}
+.mega-item:hover{border-color:rgba(11,95,255,.35);background:rgba(11,95,255,.06);}
+.mega-name{font-family:'Barlow Condensed',sans-serif;font-weight:600;color:var(--white);letter-spacing:.1em;font-size:.82rem;}
+.mega-sub{font-size:.7rem;color:var(--mist);margin-top:2px;}
+
+/* ─── BUTTONS ─── */
+.btn{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.15em;text-transform:uppercase;font-size:.78rem;padding:.8rem 2rem;cursor:pointer;border:1px solid;transition:all .3s;position:relative;overflow:hidden;}
+.btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.08),transparent);opacity:0;transition:opacity .3s;}
+.btn:hover::before{opacity:1;}
+.btn-p{background:var(--blue);color:#fff;border-color:var(--blue);}
+.btn-p:hover{background:var(--blue-d);box-shadow:0 0 32px rgba(11,95,255,.5);}
+.btn-g{background:transparent;color:var(--white);border-color:rgba(238,242,255,.28);}
+.btn-g:hover{border-color:var(--white);background:rgba(238,242,255,.05);}
+.btn-sm{padding:.55rem 1.25rem;font-size:.72rem;}
+
+/* ─── MOBILE PANEL ─── */
+.mob-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:8999;opacity:0;pointer-events:none;transition:opacity .4s;}
+.mob-overlay.open{opacity:1;pointer-events:all;}
+.mob-panel{position:fixed;top:0;left:0;width:290px;height:100vh;background:rgba(4,8,16,.98);backdrop-filter:blur(30px);border-right:1px solid rgba(11,95,255,.2);z-index:9000;transform:translateX(-100%);transition:transform .4s cubic-bezier(.4,0,.2,1);padding:0;overflow-y:auto;}
+.mob-panel.open{transform:translateX(0);}
+.mob-head{padding:1.5rem 1.75rem;border-bottom:1px solid rgba(11,95,255,.1);display:flex;align-items:center;justify-content:space-between;}
+.mob-link{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--mist);padding:1.1rem 1.75rem;border-bottom:1px solid rgba(11,95,255,.08);font-size:.88rem;transition:color .3s,padding-left .3s,background .3s;}
+.mob-link:hover{color:var(--white);padding-left:2.25rem;background:rgba(11,95,255,.04);}
+.mob-footer{padding:1.75rem;margin-top:1rem;}
+
+/* ─── HERO ─── */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;padding-top:72px;}
+.hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.18;pointer-events:none;}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(11,95,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(11,95,255,.035) 1px,transparent 1px);background-size:72px 72px;pointer-events:none;}
+.hero-glow{position:absolute;pointer-events:none;}
+.hero-glow-1{bottom:-15%;left:-5%;width:65%;height:65%;background:radial-gradient(ellipse,rgba(11,95,255,.13) 0%,transparent 70%);}
+.hero-glow-2{bottom:-25%;right:0;width:55%;height:55%;background:radial-gradient(ellipse,rgba(11,95,255,.07) 0%,transparent 70%);}
+
+/* ─── MARQUEE ─── */
+.marquee-wrap{overflow:hidden;border-top:1px solid rgba(11,95,255,.28);border-bottom:1px solid rgba(11,95,255,.1);background:rgba(11,95,255,.04);}
+.marquee-track{display:flex;width:max-content;animation:marquee 28s linear infinite;}
+@keyframes marquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.marquee-item{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:.22em;color:var(--mist);padding:.7rem 2rem;white-space:nowrap;}
+.m-dot{color:var(--blue);margin:0 .25rem;}
+
+/* ─── SECTION LABELS ─── */
+.label{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;letter-spacing:.3em;text-transform:uppercase;color:var(--blue-l);}
+.label-lined{display:flex;align-items:center;gap:1rem;justify-content:center;}
+.ll{flex:1;max-width:70px;height:1px;background:linear-gradient(90deg,transparent,var(--blue));}
+.ll-r{background:linear-gradient(90deg,var(--blue),transparent);}
+
+/* ─── STAT CARDS ─── */
+.stat-card{border-top:2px solid rgba(11,95,255,.28);border:1px solid rgba(11,95,255,.12);border-top:2px solid rgba(11,95,255,.4);padding:2rem;background:rgba(11,95,255,.03);transition:all .4s;}
+.stat-card:hover{border-top-color:var(--blue);background:rgba(11,95,255,.08);box-shadow:0 0 28px rgba(11,95,255,.1);}
+.stat-card:hover .stat-val{color:#6aaaff;}
+.stat-val{font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:300;color:var(--white);line-height:1;transition:color .4s;}
+
+/* ─── CAR CARDS ─── */
+.car-card{position:relative;overflow:hidden;border:1px solid rgba(11,95,255,.14);background:rgba(7,13,26,.9);transition:all .5s;cursor:pointer;}
+.car-card:hover{border-color:rgba(11,95,255,.55);box-shadow:0 24px 60px rgba(11,95,255,.22),0 0 0 1px rgba(11,95,255,.1);transform:translateY(-8px);}
+.car-img{height:240px;overflow:hidden;background:linear-gradient(135deg,#070d1a,#0a1428);position:relative;}
+.car-img-inner{width:100%;height:100%;display:flex;align-items:center;justify-content:center;transition:transform .6s,filter .4s;filter:saturate(.6);}
+.car-card:hover .car-img-inner{transform:scale(1.06);filter:saturate(1);}
+.car-overlay{position:absolute;bottom:0;left:0;right:0;height:55%;background:linear-gradient(to top,rgba(4,8,16,.95),transparent);}
+.pill{font-family:'Barlow Condensed',sans-serif;font-size:.66rem;letter-spacing:.12em;padding:.28rem .7rem;border:1px solid rgba(11,95,255,.4);color:var(--blue-l);background:rgba(11,95,255,.08);}
+
+/* ─── FEATURE CARDS ─── */
+.feat-card{padding:1.5rem;border:1px solid rgba(11,95,255,.14);background:rgba(7,13,26,.6);transition:all .4s;}
+.feat-card:hover{border-color:rgba(11,95,255,.42);background:rgba(11,95,255,.07);transform:translateY(-4px);}
+.feat-icon{width:44px;height:44px;background:linear-gradient(135deg,rgba(11,95,255,.3),rgba(11,95,255,.1));border:1px solid rgba(11,95,255,.3);display:flex;align-items:center;justify-content:center;margin-bottom:1rem;}
+
+/* ─── BRABUS-STYLE GRID CARDS ─── */
+.b-card{position:relative;overflow:hidden;background:var(--navy-l);cursor:pointer;transition:all .4s;}
+.b-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent,rgba(11,95,255,.08));opacity:0;transition:opacity .4s;z-index:1;}
+.b-card:hover::before{opacity:1;}
+.b-card:hover .b-img-inner{transform:scale(1.07);}
+.b-img{overflow:hidden;background:linear-gradient(135deg,#070d1a,#0a1428);position:relative;}
+.b-img-inner{width:100%;height:100%;display:flex;align-items:center;justify-content:center;transition:transform .6s;}
+.b-tag{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;padding:.22rem .6rem;background:var(--blue);color:white;}
+
+/* ─── TABS ─── */
+.tab-btn{font-family:'Barlow Condensed',sans-serif;font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;padding:1rem 1.5rem;color:var(--mist);border-bottom:2px solid transparent;border-top:none;border-left:none;border-right:none;transition:all .3s;cursor:pointer;background:none;}
+.tab-btn.active{color:var(--white);border-bottom-color:var(--blue);}
+.tab-btn:hover:not(.active){color:var(--white);border-bottom-color:rgba(11,95,255,.3);}
+
+/* ─── INPUTS ─── */
+.v-input{width:100%;background:rgba(11,95,255,.05);border:1px solid rgba(11,95,255,.2);color:var(--white);font-family:'Barlow',sans-serif;font-size:.9rem;padding:.875rem 1.25rem;outline:none;transition:border-color .3s,box-shadow .3s;-webkit-appearance:none;}
+.v-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(11,95,255,.1);}
+.v-input::placeholder{color:rgba(138,155,191,.45);}
+
+/* ─── GLASS CARD ─── */
+.glass{background:rgba(11,95,255,.04);backdrop-filter:blur(10px);border:1px solid rgba(11,95,255,.15);}
+
+/* ─── REVEAL ─── */
+.reveal{opacity:0;transform:translateY(36px);transition:opacity .8s ease,transform .8s ease;}
+.reveal.in-view{opacity:1;transform:translateY(0);}
+
+/* ─── PARTNER LOGOS ─── */
+.partner{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;letter-spacing:.18em;color:var(--mist);opacity:.28;filter:grayscale(1);transition:all .4s;cursor:default;}
+.partner:hover{opacity:.9;filter:grayscale(0);color:var(--white);}
+
+/* ─── FOOTER ─── */
+.footer-link{font-family:'Barlow',sans-serif;font-size:.82rem;color:var(--mist);transition:color .3s;display:block;margin-bottom:.6rem;}
+.footer-link:hover{color:var(--blue-l);}
+
+/* ─── CONFIGURATOR ─── */
+.config-swatch{width:36px;height:36px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:all .3s;position:relative;}
+.config-swatch.active{border-color:var(--blue);box-shadow:0 0 0 3px rgba(11,95,255,.3);}
+.config-swatch::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid transparent;transition:border-color .3s;}
+.config-swatch.active::after{border-color:var(--blue);}
+.config-option{padding:.75rem 1.25rem;border:1px solid rgba(11,95,255,.2);color:var(--mist);font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:.12em;cursor:pointer;transition:all .3s;background:transparent;text-transform:uppercase;}
+.config-option.active{border-color:var(--blue);color:var(--white);background:rgba(11,95,255,.1);}
+.config-option:hover:not(.active){border-color:rgba(11,95,255,.4);color:var(--white);}
+
+/* ─── TIMELINE ─── */
+.tl-line{position:absolute;left:50%;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,transparent,rgba(11,95,255,.4),transparent);transform:translateX(-50%);}
+
+/* ─── WORLD MAP DOTS ─── */
+.wdot{fill:var(--blue);opacity:.6;cursor:pointer;transition:opacity .3s,r .3s;}
+.wdot:hover{opacity:1;}
+
+/* ─── MOBILE RESPONSIVE ─── */
+@media(max-width:900px){
+  .hide-mob{display:none!important;}
+  .navbar{padding:0 1rem;}
+  .hero h1{font-size:clamp(2.5rem,8vw,4rem)!important;}
+  .stat-grid{grid-template-columns:1fr 1fr!important;}
+  .cards-3{grid-template-columns:1fr!important;}
+  .cards-2{grid-template-columns:1fr!important;}
+  .perf-2col{grid-template-columns:1fr!important;}
+  .detail-2col{grid-template-columns:1fr!important;}
+  .contact-split{grid-template-columns:1fr!important;}
+  .auth-split{grid-template-columns:1fr!important;}
+  .footer-grid{grid-template-columns:1fr 1fr!important;}
+  .about-2col{display:block!important;}
+  .config-layout{grid-template-columns:1fr!important;}
+  .tl-line{left:20px!important;}
+  .tl-left{text-align:left!important;padding-right:0!important;padding-left:2.5rem!important;}
+  .tl-right{padding-left:2.5rem!important;}
+  .brabus-hero-grid{grid-template-columns:1fr!important;}
+  .brabus-3col{grid-template-columns:1fr!important;}
+}
+@media(max-width:600px){
+  .footer-grid{grid-template-columns:1fr!important;}
+  .stat-grid{grid-template-columns:1fr!important;}
+  .auth-split .right-panel{display:none!important;}
+}
+
+/* ─── CAR SVG PLACEHOLDERS (reusable) ─── */
+.car-svg{width:90%;height:90%;}
+</style>
+</head>
+<body>
+
+<!-- GLOW LINE -->
+<div class="glow-line"></div>
+
+<!-- ═══════════════════════════════════════════ LOADER ═══ -->
+<div id="loader">
+  <div class="loader-logo">
+    <div class="loader-diamond"></div>
+    <span class="loader-wordmark">VELOCE</span>
+  </div>
+  <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+  <div class="loader-text">ATELIER AUTOMOBILI — EST. 2009</div>
+</div>
+
+<!-- ═══════════════════════════════════════════ MOBILE PANEL ═══ -->
+<div class="mob-overlay" id="mobOverlay" onclick="closeMob()"></div>
+<div class="mob-panel" id="mobPanel">
+  <div class="mob-head">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="logo-mark" style="width:20px;height:20px;"></div>
+      <span class="logo-text" style="font-size:.95rem;">VELOCE</span>
+    </div>
+    <button onclick="closeMob()" style="color:var(--mist);font-size:1.4rem;background:none;border:none;cursor:pointer;line-height:1;">✕</button>
+  </div>
+  <nav style="margin-top:.5rem;">
+    <a class="mob-link" onclick="go('home');closeMob()">Home</a>
+    <a class="mob-link" onclick="go('cars');closeMob()">All Models</a>
+    <a class="mob-link" onclick="go('config');closeMob()">Configurator</a>
+    <a class="mob-link" onclick="go('about');closeMob()">About Us</a>
+    <a class="mob-link" onclick="go('contact');closeMob()">Contact Us</a>
+    <a class="mob-link" onclick="go('signin');closeMob()">Sign In / Log In</a>
+  </nav>
+  <div class="mob-footer">
+    <button class="btn btn-p" style="width:100%;" onclick="go('signin');closeMob()">Reserve Now</button>
+    <div style="margin-top:1.5rem;font-size:.72rem;opacity:.4;letter-spacing:.1em;font-family:'Barlow Condensed',sans-serif;">MODENA · LONDON · NEW YORK · DUBAI</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ NAVBAR ═══ -->
+<nav class="navbar" id="navbar">
+  <div class="nav-inner">
+    <a onclick="go('home')" style="display:flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer;">
+      <div class="logo-mark"></div>
+      <span class="logo-text">VELOCE</span>
+    </a>
+    <div style="display:flex;align-items:center;gap:2.5rem;" class="hide-mob">
+      <div class="nav-item">
+        <button class="nav-link" onclick="go('cars')">Models</button>
+        <div class="mega">
+          <div class="mega-item" onclick="detail('vx1')"><div class="mega-name">VELOCE VX-1</div><div class="mega-sub">Hypercar · 1,050 HP · 12 Units</div></div>
+          <div class="mega-item" onclick="detail('sr')"><div class="mega-name">VELOCE SR</div><div class="mega-sub">Supercar · 820 HP · From €680K</div></div>
+          <div class="mega-item" onclick="detail('gt')"><div class="mega-name">VELOCE GT</div><div class="mega-sub">Grand Tourer · 650 HP · From €480K</div></div>
+          <div class="mega-item" onclick="detail('apex')"><div class="mega-name">VELOCE APEX</div><div class="mega-sub">Track Only · 1,250 HP · Bespoke</div></div>
+          <div class="mega-item" onclick="go('config')"><div class="mega-name">CONFIGURATOR →</div><div class="mega-sub">Build your bespoke Veloce</div></div>
+          <div class="mega-item" onclick="go('cars')"><div class="mega-name">ALL MODELS →</div><div class="mega-sub">Full lineup</div></div>
+        </div>
+      </div>
+      <button class="nav-link" onclick="go('config')">Configure</button>
+      <button class="nav-link" onclick="go('about')">Atelier</button>
+      <button class="nav-link">Technology</button>
+      <button class="nav-link" onclick="go('contact')">Contact</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:.75rem;">
+      <button class="btn btn-p btn-sm hide-mob" onclick="go('signin')">Reserve</button>
+      <button onclick="openMob()" style="background:none;border:none;cursor:pointer;padding:.5rem;color:var(--white);">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════
+     HOME PAGE
+═══════════════════════════════════════════════════════════════ -->
+<div id="page-home" class="page active">
+
+  <!-- HERO -->
+  <section class="hero">
+    <!-- Simulated video bg (gradient animated) -->
+    <div style="position:absolute;inset:0;background:linear-gradient(135deg,#040810 0%,#060c18 40%,#040810 100%);animation:bgShift 8s ease-in-out infinite alternate;"></div>
+    <style>@keyframes bgShift{0%{background-position:0% 0%;}100%{background-position:100% 100%;}}</style>
+    <div class="hero-grid"></div>
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+    <!-- Animated scan line -->
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(11,95,255,.4),transparent);animation:scanLine 6s linear infinite;pointer-events:none;"></div>
+    <style>@keyframes scanLine{0%{top:-2px;}100%{top:100%;opacity:0;}}</style>
+
+    <div style="max-width:1200px;margin:0 auto;padding:0 2rem;position:relative;z-index:10;width:100%;">
+      <div style="max-width:820px;">
+        <div class="label" style="margin-bottom:1.5rem;display:flex;align-items:center;gap:.75rem;">
+          <span style="display:inline-block;width:30px;height:1px;background:var(--blue);"></span>
+          Atelier Automobili — Est. 2009
+        </div>
+        <h1 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(3.2rem,7vw,6.5rem);font-weight:300;line-height:1.05;color:var(--white);margin-bottom:1.5rem;letter-spacing:-.01em;">
+          Born from Speed.<br>
+          <span style="color:var(--blue-l);text-shadow:0 0 60px rgba(61,127,255,.4);">Forged in Fire.</span>
+        </h1>
+        <p style="font-size:1.05rem;line-height:1.85;max-width:500px;margin-bottom:2.5rem;font-weight:300;">Each Veloce is a singular expression of Italian craftsmanship and engineering obsession — built for those who refuse to compromise.</p>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+          <button class="btn btn-p" onclick="go('cars')">Explore Models</button>
+          <button class="btn btn-g" onclick="go('config')">
+            <span style="margin-right:.5rem;font-size:1rem;">▶</span> Configure Yours
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero car silhouette large -->
+    <div style="position:absolute;right:-2%;bottom:80px;width:58%;pointer-events:none;opacity:.12;">
+      <svg viewBox="0 0 900 360" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="450" cy="340" rx="430" ry="22" fill="rgba(11,95,255,.5)"/>
+        <path d="M60 280 Q90 200 230 160 Q330 100 460 90 Q580 80 700 140 Q780 175 820 240 Q845 270 845 285 Z" fill="rgba(11,95,255,.1)" stroke="rgba(11,95,255,.5)" stroke-width="2"/>
+        <path d="M110 280 Q220 230 360 195 Q490 162 630 190 Q730 210 800 258" fill="none" stroke="rgba(11,95,255,.7)" stroke-width="2"/>
+        <path d="M200 162 Q330 118 460 112 Q580 108 690 148" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+        <circle cx="230" cy="287" r="55" fill="none" stroke="rgba(11,95,255,.6)" stroke-width="12"/>
+        <circle cx="230" cy="287" r="34" fill="rgba(11,95,255,.12)" stroke="rgba(11,95,255,.4)" stroke-width="3"/>
+        <circle cx="230" cy="287" r="14" fill="rgba(11,95,255,.25)"/>
+        <circle cx="680" cy="287" r="55" fill="none" stroke="rgba(11,95,255,.6)" stroke-width="12"/>
+        <circle cx="680" cy="287" r="34" fill="rgba(11,95,255,.12)" stroke="rgba(11,95,255,.4)" stroke-width="3"/>
+        <circle cx="680" cy="287" r="14" fill="rgba(11,95,255,.25)"/>
+        <path d="M460 90 L500 55 L545 90" fill="none" stroke="rgba(11,95,255,.3)" stroke-width="1.5"/>
+      </svg>
+    </div>
+
+    <!-- Marquee -->
+    <div class="marquee-wrap" style="position:absolute;bottom:0;left:0;right:0;">
+      <div class="marquee-track" id="marqueeTrack">
+        <span class="marquee-item">0–100 KM/H <span class="m-dot">·</span> 2.3S</span>
+        <span class="marquee-item">1,050 BHP <span class="m-dot">·</span> V12 HYBRID</span>
+        <span class="marquee-item">TOP SPEED <span class="m-dot">·</span> 380 KM/H</span>
+        <span class="marquee-item">CARBON MONOCOQUE <span class="m-dot">·</span> 62 KG</span>
+        <span class="marquee-item">PRODUCTION <span class="m-dot">·</span> 12 UNITS</span>
+        <span class="marquee-item">ACTIVE AERO <span class="m-dot">·</span> 7 SURFACES</span>
+        <span class="marquee-item">TORQUE <span class="m-dot">·</span> 1,100 NM</span>
+        <span class="marquee-item">NÜRBURGRING <span class="m-dot">·</span> 6:12.4</span>
+        <span class="marquee-item">0–100 KM/H <span class="m-dot">·</span> 2.3S</span>
+        <span class="marquee-item">1,050 BHP <span class="m-dot">·</span> V12 HYBRID</span>
+        <span class="marquee-item">TOP SPEED <span class="m-dot">·</span> 380 KM/H</span>
+        <span class="marquee-item">CARBON MONOCOQUE <span class="m-dot">·</span> 62 KG</span>
+        <span class="marquee-item">PRODUCTION <span class="m-dot">·</span> 12 UNITS</span>
+        <span class="marquee-item">ACTIVE AERO <span class="m-dot">·</span> 7 SURFACES</span>
+        <span class="marquee-item">TORQUE <span class="m-dot">·</span> 1,100 NM</span>
+        <span class="marquee-item">NÜRBURGRING <span class="m-dot">·</span> 6:12.4</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS BAR -->
+  <section style="background:rgba(7,13,26,.95);border-bottom:1px solid rgba(11,95,255,.1);">
+    <div style="max-width:1200px;margin:0 auto;">
+      <div class="stat-grid" style="display:grid;grid-template-columns:repeat(4,1fr);">
+        <div class="stat-card reveal"><div class="label" style="margin-bottom:.75rem;">Peak Power</div><div class="stat-val">1,050</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;letter-spacing:.15em;color:var(--mist);margin-top:.25rem;">BRAKE HORSEPOWER</div></div>
+        <div class="stat-card reveal" style="transition-delay:.1s;"><div class="label" style="margin-bottom:.75rem;">Acceleration</div><div class="stat-val">2.3<span style="font-size:1.4rem;">s</span></div><div style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;letter-spacing:.15em;color:var(--mist);margin-top:.25rem;">0–100 KM/H</div></div>
+        <div class="stat-card reveal" style="transition-delay:.2s;"><div class="label" style="margin-bottom:.75rem;">Maximum Speed</div><div class="stat-val">380</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;letter-spacing:.15em;color:var(--mist);margin-top:.25rem;">KM/H ELECTRONICALLY LIMITED</div></div>
+        <div class="stat-card reveal" style="transition-delay:.3s;"><div class="label" style="margin-bottom:.75rem;">Production</div><div class="stat-val">12</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;letter-spacing:.15em;color:var(--mist);margin-top:.25rem;">UNITS PER YEAR</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURED MODELS -->
+  <section style="padding:8rem 2rem;">
+    <div style="max-width:1200px;margin:0 auto;">
+      <div style="margin-bottom:4rem;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+        <div><div class="label reveal" style="margin-bottom:.75rem;">The Collection</div><h2 class="reveal" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:3rem;font-weight:300;color:var(--white);line-height:1.1;">Featured Models</h2></div>
+        <button class="btn btn-g reveal" onclick="go('cars')">View All Models →</button>
+      </div>
+      <div class="cards-3 reveal" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;">
+        <!-- VX-1 -->
+        <div class="car-card" onclick="detail('vx1')">
+          <div class="car-img">
+            <div class="car-img-inner"><?xml version="1.0"?><svg class="car-svg" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cg1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0B5FFF" stop-opacity=".3"/><stop offset="100%" stop-color="#3D7FFF" stop-opacity=".1"/></linearGradient></defs><ellipse cx="200" cy="178" rx="180" ry="11" fill="rgba(11,95,255,.22)"/><path d="M38 152 Q62 108 122 88 Q182 48 222 44 Q286 38 342 80 Q372 102 382 132 Q388 148 386 157Z" fill="url(#cg1)" stroke="rgba(11,95,255,.65)" stroke-width="1.5"/><path d="M78 152 Q158 118 218 100 Q278 80 330 100 Q362 116 372 144" fill="none" stroke="rgba(11,95,255,.85)" stroke-width="1.2"/><circle cx="112" cy="157" r="30" fill="none" stroke="rgba(11,95,255,.65)" stroke-width="7"/><circle cx="112" cy="157" r="18" fill="rgba(11,95,255,.12)" stroke="rgba(11,95,255,.4)" stroke-width="2"/><circle cx="112" cy="157" r="8" fill="rgba(11,95,255,.3)"/><circle cx="303" cy="157" r="30" fill="none" stroke="rgba(11,95,255,.65)" stroke-width="7"/><circle cx="303" cy="157" r="18" fill="rgba(11,95,255,.12)" stroke="rgba(11,95,255,.4)" stroke-width="2"/><circle cx="303" cy="157" r="8" fill="rgba(11,95,255,.3)"/><path d="M140 80 L270 72" stroke="rgba(255,255,255,.1)" stroke-width=".5"/><path d="M220 44 L242 28 L264 44" fill="none" stroke="rgba(11,95,255,.4)" stroke-width="1.2"/><text x="200" y="22" text-anchor="middle" fill="rgba(11,95,255,.25)" font-family="Barlow Condensed" font-size="8" letter-spacing="4">VELOCE VX-1</text></svg></div>
+            <div class="car-overlay"></div>
+            <div style="position:absolute;top:1rem;left:1rem;display:flex;gap:.4rem;"><span class="b-tag">HYPERCAR</span><span class="b-tag" style="background:rgba(200,140,0,.85);">LIMITED 12</span></div>
+          </div>
+          <div style="padding:1.5rem;">
+            <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.55rem;color:var(--white);margin-bottom:.25rem;">Veloce VX-1</div>
+            <div class="label" style="font-size:.62rem;margin-bottom:1rem;">Pinnacle Hypercar Series</div>
+            <div style="display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:1.25rem;"><span class="pill">1,050 HP</span><span class="pill">2.3s 0–100</span><span class="pill">380 KM/H</span></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;"><div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--white);">From <strong>€2.4M</strong></div><span style="color:var(--blue-l);font-family:'Barlow Condensed',sans-serif;font-size:.72rem;letter-spacing:.1em;">EXPLORE →</span></div>
+          </div>
+        </div>
+        <!-- SR -->
+        <div class="car-card" onclick="detail('sr')">
+          <div class="car-img">
+            <div class="car-img-inner"><svg class="car-svg" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cg2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0B5FFF" stop-opacity=".2"/><stop offset="100%" stop-color="#5D9FFF" stop-opacity=".15"/></linearGradient></defs><ellipse cx="200" cy="178" rx="182" ry="11" fill="rgba(11,95,255,.17)"/><path d="M28 157 Q52 105 132 83 Q192 53 232 48 Q302 40 362 90 Q388 117 392 152Z" fill="url(#cg2)" stroke="rgba(11,95,255,.55)" stroke-width="1.5"/><path d="M68 157 Q148 122 212 102 Q282 80 342 110 Q378 132 387 152" fill="none" stroke="rgba(11,95,255,.75)" stroke-width="1.2"/><circle cx="107" cy="160" r="28" fill="none" stroke="rgba(11,95,255,.55)" stroke-width="6.5"/><circle cx="107" cy="160" r="16" fill="rgba(11,95,255,.1)" stroke="rgba(11,95,255,.35)" stroke-width="1.5"/><circle cx="107" cy="160" r="7" fill="rgba(11,95,255,.25)"/><circle cx="312" cy="160" r="28" fill="none" stroke="rgba(11,95,255,.55)" stroke-width="6.5"/><circle cx="312" cy="160" r="16" fill="rgba(11,95,255,.1)" stroke="rgba(11,95,255,.35)" stroke-width="1.5"/><circle cx="312" cy="160" r="7" fill="rgba(11,95,255,.25)"/><path d="M132 83 Q200 58 272 70" fill="none" stroke="rgba(255,255,255,.1)" stroke-width=".8"/><text x="200" y="22" text-anchor="middle" fill="rgba(11,95,255,.22)" font-family="Barlow Condensed" font-size="8" letter-spacing="4">VELOCE SR</text></svg></div>
+            <div class="car-overlay"></div>
+            <div style="position:absolute;top:1rem;left:1rem;"><span class="b-tag">SUPERCAR</span></div>
+          </div>
+          <div style="padding:1.5rem;">
+            <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.55rem;color:var(--white);margin-bottom:.25rem;">Veloce SR</div>
+            <div class="label" style="font-size:.62rem;margin-bottom:1rem;">Street & Track Edition</div>
+            <div style="display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:1.25rem;"><span class="pill">820 HP</span><span class="pill">2.8s 0–100</span><span class="pill">340 KM/H</span></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;"><div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--white);">From <strong>€680K</strong></div><span style="color:var(--blue-l);font-family:'Barlow Condensed',sans-serif;font-size:.72rem;letter-spacing:.1em;">EXPLORE →</span></div>
+          </div>
+        </div>
+        <!-- GT -->
+        <div class="car-card" onclick="detail('gt')">
+          <div class="car-img">
+            <div class="car-img-inner"><svg class="car-svg" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cg3" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0B5FFF" stop-opacity=".14"/><stop offset="100%" stop-color="#3D7FFF" stop-opacity=".22"/></linearGradient></defs><ellipse cx="200" cy="178" rx="185" ry="12" fill="rgba(11,95,255,.13)"/><path d="M22 160 Q55 114 140 88 Q200 60 252 56 Q322 48 372 96 Q394 122 392 157Z" fill="url(#cg3)" stroke="rgba(11,95,255,.48)" stroke-width="1.5"/><path d="M62 160 Q148 126 220 106 Q292 84 358 116 Q382 132 390 154" fill="none" stroke="rgba(11,95,255,.68)" stroke-width="1.2"/><circle cx="115" cy="162" r="27" fill="none" stroke="rgba(11,95,255,.5)" stroke-width="6"/><circle cx="115" cy="162" r="15" fill="rgba(11,95,255,.09)" stroke="rgba(11,95,255,.32)" stroke-width="1.5"/><circle cx="115" cy="162" r="6" fill="rgba(11,95,255,.22)"/><circle cx="318" cy="162" r="27" fill="none" stroke="rgba(11,95,255,.5)" stroke-width="6"/><circle cx="318" cy="162" r="15" fill="rgba(11,95,255,.09)" stroke="rgba(11,95,255,.32)" stroke-width="1.5"/><circle cx="318" cy="162" r="6" fill="rgba(11,95,255,.22)"/><text x="200" y="22" text-anchor="middle" fill="rgba(11,95,255,.2)" font-family="Barlow Condensed" font-size="8" letter-spacing="4">VELOCE GT</text></svg></div>
+            <div class="car-overlay"></div>
+            <div style="position:absolute;top:1rem;left:1rem;"><span class="b-tag" style="background:rgba(11,95,255,.6);">GRAND TOURER</span></div>
+          </div>
+          <div style="padding:1.5rem;">
+            <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.55rem;color:var(--white);margin-bottom:.25rem;">Veloce GT</div>
+            <div class="label" style="font-size:.62rem;margin-bottom:1rem;">Continental Grand Tourer</div>
+            <div style="display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:1.25rem;"><span class="pill">650 HP</span><span class="pill">3.2s 0–100</span><span class="pill">310 KM/H</span></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;"><div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--white);">From <strong>€480K</strong></div><span style="color:var(--blue-l);font-family:'Barlow Condensed',sans-serif;font-size:.72rem;letter-spacing:.1em;">EXPLORE →</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PARTNERS STRIP -->
+  <section style="padding:3rem 2rem;background:var(--navy-l);border-top:1px solid rgba(11,95,255,.1);border-bottom:1px solid rgba(11,95,255,.1);">
+    <div style="max-width:1200px;margin:0 auto;">
+      <div class="label" style="text-align:center;margin-bottom:2rem;opacity:.45;">As Featured In</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:3.5rem;flex-wrap:wrap;">
+        <span class="partner">ROBB REPORT</span><span class="partner">MOTOR TREND</span><span class="partner">TOP GEAR</span><span class="partner">AUTOCAR</span><span class="partner">EVO</span><span class="partner">CAR & DRIVER</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PERFORMANCE SECTION -->
+  <section style="padding:8rem 2rem;">
+    <div style="max-width:1200px;margin:0 auto;">
+      <div class="perf-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;">
+        <div class="reveal">
+          <div class="label" style="margin-bottom:1rem;">Engineering Excellence</div>
+          <h2 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:3rem;font-weight:300;color:var(--white);line-height:1.1;margin-bottom:1.5rem;">Performance<br>Reimagined</h2>
+          <p style="line-height:1.9;margin-bottom:1.5rem;font-weight:300;">Every Veloce begins as a blank carbon sheet. Our engineers spend over 14,000 hours crafting each vehicle from first principle to final polish — a process that refuses to acknowledge compromise.</p>
+          <p style="line-height:1.9;margin-bottom:2.5rem;font-weight:300;font-size:.95rem;">The result is not merely a fast car. It is an extension of human ambition — responsive, intuitive, alive.</p>
+          <button class="btn btn-p" onclick="go('about')">Explore Technology</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="feat-card reveal" style="transition-delay:.1s;"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue-l)" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.1em;color:var(--white);margin-bottom:.5rem;font-size:.82rem;">HYBRID POWER</div><div style="font-size:.8rem;line-height:1.7;font-weight:300;">V12 combustion paired with dual electric motors for instant torque delivery at any speed.</div></div>
+          <div class="feat-card reveal" style="transition-delay:.2s;"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue-l)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.1em;color:var(--white);margin-bottom:.5rem;font-size:.82rem;">ACTIVE AERO</div><div style="font-size:.8rem;line-height:1.7;font-weight:300;">7-surface adaptive aerodynamic system reacts in milliseconds to driving conditions.</div></div>
+          <div class="feat-card reveal" style="transition-delay:.3s;"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue-l)" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.1em;color:var(--white);margin-bottom:.5rem;font-size:.82rem;">CARBON CELL</div><div style="font-size:.8rem;line-height:1.7;font-weight:300;">62kg aerospace-grade monocoque — stiffer than steel at 40% the weight.</div></div>
+          <div class="feat-card reveal" style="transition-delay:.4s;"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue-l)" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.1em;color:var(--white);margin-bottom:.5rem;font-size:.82rem;">NEURAL DRIVE</div><div style="font-size:.8rem;line-height:1.7;font-weight:300;">AI-assisted chassis system learns and adapts to your driving style within 3 laps.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ATELIER CTA -->
+  <section style="padding:8rem 2rem;border-top:1px solid rgba(11,95,255,.1);border-bottom:1px solid rgba(11,95,255,.1);background:radial-gradient(ellipse at center,rgba(11,95,255,.07),transparent 65%);">
+    <div style="max-width:800px;margin:0 auto;text-align:center;">
+      <div class="label-lined reveal" style="margin-bottom:2rem;"><div class="ll"></div><span class="label">Bespoke Programme</span><div class="ll ll-r"></div></div>
+      <h2 class="reveal" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:3.5rem;font-weight:300;color:var(--white);line-height:1.1;margin-bottom:1.5rem;">Your Vision.<br>Our Craft.</h2>
+      <p class="reveal" style="line-height:1.9;margin-bottom:3rem;font-weight:300;font-size:1rem;">Every Veloce can be configured to your exact specification. From bespoke paint formulations ground in our Modena atelier to personalised interior embroidery — no detail too small, no ambition too great.</p>
+      <div class="reveal" style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-p" onclick="go('config')">Begin Configuration</button>
+        <button class="btn btn-g" onclick="go('about')">Visit Atelier</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <div id="footer-home"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     ALL CARS PAGE
+═══════════════════════════════════════════════════════════════ -->
+<div id="page-cars" class="page">
+  <!-- Hero -->
+  <div style="padding-top:72px;min-height:42vh;display:flex;align-items:center;position:relative;overflow:hidden;border-bottom:1px solid rgba(11,95,255,.14);">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 65% 100%,rgba(11,95,255,.1),transparent 60%);"></div>
+    <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(11,95,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(11,95,255,.03) 1px,transparent 1px);background-size:60px 60px;"></div>
+    <div style="max-width:1200px;margin:0 auto;padding:4rem 2rem;">
+      <div class="label" style="margin-bottom:1rem;">The Complete Lineup</div>
+      <h1 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(3rem,5vw,5rem);font-weight:300;color:var(--white);line-height:1.05;margin-bottom:1rem;">All Models</h1>
+      <p style="max-width:500px;line-height:1.85;font-weight:300;font-size:.95rem;">From exclusive hypercars to daily grand tourers — every Veloce is an engineering masterwork.</p>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div style="background:rgba(7,13,26,.96);border-bottom:1px solid rgba(11,95,255,.1);padding:1rem 2rem;position:sticky;top:72px;z-index:100;backdrop-filter:blur(20px);">
+    <div style="max-width:1200px;margin:0 auto;display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;">
+      <span style="font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:.2em;color:var(--mist);margin-right:.25rem;">FILTER:</span>
+      <button class="filter-btn" data-cat="all" onclick="filterCars('all',this)" style="font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:.14em;padding:.38rem .9rem;background:var(--blue);color:white;border:1px solid var(--blue);cursor:pointer;transition:all .3s;">ALL</button>
+      <button class="filter-btn" data-cat="hypercar" onclick="filterCars('hypercar',this)" style="font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:.14em;padding:.38rem .9rem;background:transparent;color:var(--mist);border:1px solid rgba(11,95,255,.2);cursor:pointer;transition:all .3s;">HYPERCAR</button>
+      <button class="filter-btn" data-cat="supercar" onclick="filterCars('supercar',this)" style="font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:.14em;padding:.38rem .9rem;background:transparent;color:var(--mist);border:1px solid rgba(11,95,255,.2);cursor:pointer;transition:all .3s;">SUPERCAR</button>
+      <button class="filter-btn" data-cat="gt" onclick="filterCars('gt',this)" style="font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:.14em;padding:.38rem .9rem;background:transparent;color:var(--mist);border:1px solid rgba(11,95,255,.2);cursor:pointer;transition:all .3s;">GRAND TOURER</button>
+      <button class="filter-btn" data-cat="track" onclick="filterCars('track',this)" style="font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:.14em;padding:.38rem .9rem;background:transparent;color:var(--mist);border:1px solid rgba(11,95,255,.2);cursor:pointer;transition:all .3s;">TRACK</button>
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <div style="max-width:1200px;margin:0 auto;padding:4rem 2rem;" id="cars-grid">
+    <!-- Large left + 2 right (Brabus style) -->
+    <div class="brabus-hero-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:2px;background:rgba(11,95,255,.08);margin-bottom:2px;">
+      <div class="b-card car-item" data-cat="hypercar" onclick="detail('vx1')" style="grid-row:span 2;">
+        <div class="b-img" style="height:660px;">
+          <div class="b-img-inner" style="height:100%;"><svg viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg" style="width:82%;height:82%;"><defs><radialGradient id="rg1" cx="50%" cy="60%" r="50%"><stop offset="0%" stop-color="#0B5FFF" stop-opacity=".22"/><stop offset="100%" stop-color="#040810" stop-opacity="0"/></radialGradient></defs><ellipse cx="300" cy="374" rx="282" ry="18" fill="rgba(11,95,255,.28)"/><rect x="0" y="0" width="600" height="400" fill="url(#rg1)"/><path d="M48 292 Q78 208 200 168 Q278 108 330 98 Q422 82 524 162 Q572 196 588 252 Q592 278 590 295Z" fill="rgba(11,95,255,.12)" stroke="rgba(11,95,255,.72)" stroke-width="2"/><path d="M88 292 Q180 242 290 207 Q402 172 492 212 Q547 236 568 278" fill="none" stroke="rgba(11,95,255,.92)" stroke-width="2"/><path d="M138 172 Q230 132 332 126 Q422 122 502 164" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="1"/><path d="M330 98 L362 68 L392 90" fill="none" stroke="rgba(11,95,255,.45)" stroke-width="1.5"/><circle cx="158" cy="297" r="46" fill="none" stroke="rgba(11,95,255,.72)" stroke-width="11"/><circle cx="158" cy="297" r="29" fill="rgba(11,95,255,.16)" stroke="rgba(11,95,255,.5)" stroke-width="3"/><circle cx="158" cy="297" r="12" fill="rgba(11,95,255,.35)"/><circle cx="462" cy="297" r="46" fill="none" stroke="rgba(11,95,255,.72)" stroke-width="11"/><circle cx="462" cy="297" r="29" fill="rgba(11,95,255,.16)" stroke="rgba(11,95,255,.5)" stroke-width="3"/><circle cx="462" cy="297" r="12" fill="rgba(11,95,255,.35)"/><text x="300" y="38" text-anchor="middle" fill="rgba(11,95,255,.28)" font-family="Barlow Condensed" font-size="10" letter-spacing="4">VELOCE VX-1 HYPERCAR</text></svg></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(4,8,16,.92) 0%,rgba(4,8,16,.2) 50%,transparent 100%);"></div>
+          <div style="position:absolute;top:1.5rem;left:1.5rem;display:flex;gap:.5rem;z-index:2;"><span class="b-tag">HYPERCAR</span><span class="b-tag" style="background:rgba(200,148,0,.85);">LIMITED 12</span></div>
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:2rem;z-index:2;">
+            <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:2rem;color:var(--white);margin-bottom:.5rem;">Veloce VX-1</div>
+            <div style="display:flex;gap:.65rem;align-items:center;flex-wrap:wrap;"><span class="pill">1,050 HP</span><span class="pill">2.3s</span><span class="pill">380 KM/H</span><span style="margin-left:auto;font-family:'Cormorant Garamond',serif;color:var(--white);font-size:1.1rem;">€2.4M+</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="b-card car-item" data-cat="supercar" onclick="detail('sr')">
+        <div class="b-img" style="height:330px;">
+          <div class="b-img-inner" style="height:100%;"><svg viewBox="0 0 440 260" xmlns="http://www.w3.org/2000/svg" style="width:85%;height:85%;"><ellipse cx="220" cy="242" rx="200" ry="14" fill="rgba(11,95,255,.2)"/><path d="M28 212 Q55 162 152 130 Q212 96 258 90 Q328 80 378 132 Q398 156 402 202Z" fill="rgba(11,95,255,.1)" stroke="rgba(11,95,255,.62)" stroke-width="1.5"/><path d="M62 212 Q145 175 215 155 Q288 134 362 165 Q388 180 398 204" fill="none" stroke="rgba(11,95,255,.82)" stroke-width="1.5"/><circle cx="107" cy="214" r="33" fill="none" stroke="rgba(11,95,255,.62)" stroke-width="7"/><circle cx="107" cy="214" r="19" fill="rgba(11,95,255,.12)" stroke="rgba(11,95,255,.42)" stroke-width="2"/><circle cx="107" cy="214" r="8" fill="rgba(11,95,255,.28)"/><circle cx="320" cy="214" r="33" fill="none" stroke="rgba(11,95,255,.62)" stroke-width="7"/><circle cx="320" cy="214" r="19" fill="rgba(11,95,255,.12)" stroke="rgba(11,95,255,.42)" stroke-width="2"/><circle cx="320" cy="214" r="8" fill="rgba(11,95,255,.28)"/></svg></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(4,8,16,.9),transparent 60%);"></div>
+          <div style="position:absolute;top:1rem;left:1rem;z-index:2;"><span class="b-tag">SUPERCAR</span></div>
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:1.5rem;z-index:2;"><div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.6rem;color:var(--white);margin-bottom:.4rem;">Veloce SR</div><div style="display:flex;gap:.5rem;align-items:center;"><span class="pill">820 HP</span><span class="pill">2.8s</span><span style="margin-left:auto;font-family:'Cormorant Garamond',serif;color:var(--white);">€680K+</span></div></div>
+        </div>
+      </div>
+      <div class="b-card car-item" data-cat="gt" onclick="detail('gt')">
+        <div class="b-img" style="height:330px;">
+          <div class="b-img-inner" style="height:100%;"><svg viewBox="0 0 440 260" xmlns="http://www.w3.org/2000/svg" style="width:85%;height:85%;"><ellipse cx="220" cy="242" rx="202" ry="13" fill="rgba(11,95,255,.15)"/><path d="M18 217 Q52 164 154 132 Q216 98 268 94 Q340 84 382 138 Q402 164 402 208Z" fill="rgba(11,95,255,.08)" stroke="rgba(11,95,255,.5)" stroke-width="1.5"/><path d="M56 217 Q148 180 222 160 Q296 140 370 170 Q392 182 398 208" fill="none" stroke="rgba(11,95,255,.7)" stroke-width="1.5"/><circle cx="110" cy="218" r="31" fill="none" stroke="rgba(11,95,255,.52)" stroke-width="6.5"/><circle cx="110" cy="218" r="17" fill="rgba(11,95,255,.09)" stroke="rgba(11,95,255,.35)" stroke-width="1.5"/><circle cx="110" cy="218" r="7" fill="rgba(11,95,255,.22)"/><circle cx="325" cy="218" r="31" fill="none" stroke="rgba(11,95,255,.52)" stroke-width="6.5"/><circle cx="325" cy="218" r="17" fill="rgba(11,95,255,.09)" stroke="rgba(11,95,255,.35)" stroke-width="1.5"/><circle cx="325" cy="218" r="7" fill="rgba(11,95,255,.22)"/></svg></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(4,8,16,.9),transparent 60%);"></div>
+          <div style="position:absolute;top:1rem;left:1rem;z-index:2;"><span class="b-tag" style="background:rgba(11,95,255,.6);">GRAND TOURER</span></div>
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:1.5rem;z-index:2;"><div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.6rem;color:var(--white);margin-bottom:.4rem;">Veloce GT</div><div style="display:flex;gap:.5rem;align-items:center;"><span class="pill">650 HP</span><span class="pill">3.2s</span><span style="margin-left:auto;font-family:'Cormorant Garamond',serif;color:var(--white);">€480K+</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="brabus-3col" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;background:rgba(11,95,255,.08);">
+      <div class="b-card car-item" data-cat="track" onclick="detail('apex')">
+        <div class="b-img" style="height:280px;">
+          <div class="b-img-inner" style="height:100%;"><svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg" style="width:88%;height:88%;"><ellipse cx="180" cy="207" rx="170" ry="12" fill="rgba(11,95,255,.22)"/><path d="M18 188 Q44 144 130 118 Q188 83 228 78 Q298 70 343 120 Q360 144 362 180Z" fill="rgba(11,95,255,.12)" stroke="rgba(11,95,255,.68)" stroke-width="1.5"/><path d="M50 188 Q128 154 195 134 Q264 114 335 144 Q354 158 360 178" fill="none" stroke="rgba(11,95,255,.88)" stroke-width="1.5"/><circle cx="96" cy="190" r="29" fill="none" stroke="rgba(11,95,255,.68)" stroke-width="6.5"/><circle cx="96" cy="190" r="17" fill="rgba(11,95,255,.13)" stroke="rgba(11,95,255,.42)" stroke-width="2"/><circle cx="96" cy="190" r="7" fill="rgba(11,95,255,.3)"/><circle cx="290" cy="190" r="29" fill="none" stroke="rgba(11,95,255,.68)" stroke-width="6.5"/><circle cx="290" cy="190" r="17" fill="rgba(11,95,255,.13)" stroke="rgba(11,95,255,.42)" stroke-width="2"/><circle cx="290" cy="190" r="7" fill="rgba(11,95,255,.3)"/></svg></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(4,8,16,.9),transparent 60%);"></div>
+          <div style="position:absolute;top:1rem;left:1rem;display:flex;gap:.4rem;z-index:2;"><span class="b-tag" style="background:rgba(190,40,40,.9);">TRACK</span><span class="b-tag">BESPOKE</span></div>
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:1.25rem;z-index:2;"><div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.35rem;color:var(--white);margin-bottom:.35rem;">Veloce APEX</div><div style="display:flex;gap:.4rem;"><span class="pill">1,250 HP</span><span class="pill">1.9s</span></div></div>
+        </div>
+      </div>
+      <div class="b-card car-item" data-cat="hypercar" onclick="detail('vx1')">
+        <div class="b-img" style="height:280px;">
+          <div class="b-img-inner" style="height:100%;"><svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg" style="width:88%;height:88%;"><ellipse cx="180" cy="207" rx="172" ry="12" fill="rgba(11,95,255,.18)"/><path d="M20 190 Q46 146 134 120 Q190 86 228 82 Q300 74 346 124 Q360 148 362 183Z" fill="rgba(11,95,255,.1)" stroke="rgba(11,95,255,.6)" stroke-width="1.5"/><path d="M54 190 Q135 157 202 138 Q270 118 338 148 Q358 162 362 183" fill="none" stroke="rgba(11,95,255,.82)" stroke-width="1.5"/><circle cx="100" cy="192" r="28" fill="none" stroke="rgba(11,95,255,.62)" stroke-width="6"/><circle cx="100" cy="192" r="16" fill="rgba(11,95,255,.11)" stroke="rgba(11,95,255,.38)" stroke-width="1.5"/><circle cx="100" cy="192" r="7" fill="rgba(11,95,255,.28)"/><circle cx="292" cy="192" r="28" fill="none" stroke="rgba(11,95,255,.62)" stroke-width="6"/><circle cx="292" cy="192" r="16" fill="rgba(11,95,255,.11)" stroke="rgba(11,95,255,.38)" stroke-width="1.5"/><circle cx="292" cy="192" r="7" fill="rgba(11,95,255,.28)"/><text x="180" y="48" text-anchor="middle" fill="rgba(11,95,255,.25)" font-family="Barlow Condensed" font-size="8" letter-spacing="3">VX-1 ROADSTER</text></svg></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(4,8,16,.9),transparent 60%);"></div>
+          <div style="position:absolute;top:1rem;left:1rem;z-index:2;"><span class="b-tag">HYPERCAR</span></div>
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:1.25rem;z-index:2;"><div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.35rem;color:var(--white);margin-bottom:.35rem;">VX-1 Roadster</div><div style="display:flex;gap:.4rem;"><span class="pill">1,050 HP</span><span class="pill">Open Air</span></div></div>
+        </div>
+      </div>
+      <div class="b-card car-item" data-cat="gt" onclick="detail('gt')">
+        <div class="b-img" style="height:280px;">
+          <div class="b-img-inner" style="height:100%;"><svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg" style="width:88%;height:88%;"><ellipse cx="180" cy="208" rx="174" ry="12" fill="rgba(11,95,255,.14)"/><path d="M16 192 Q44 150 138 122 Q196 90 234 86 Q308 78 350 130 Q364 154 364 186Z" fill="rgba(11,95,255,.08)" stroke="rgba(11,95,255,.5)" stroke-width="1.5"/><path d="M52 192 Q140 160 208 142 Q278 122 344 152 Q360 166 364 186" fill="none" stroke="rgba(11,95,255,.72)" stroke-width="1.5"/><circle cx="100" cy="194" r="27" fill="none" stroke="rgba(11,95,255,.52)" stroke-width="5.5"/><circle cx="100" cy="194" r="15" fill="rgba(11,95,255,.09)" stroke="rgba(11,95,255,.32)" stroke-width="1.5"/><circle cx="100" cy="194" r="6" fill="rgba(11,95,255,.2)"/><circle cx="294" cy="194" r="27" fill="none" stroke="rgba(11,95,255,.52)" stroke-width="5.5"/><circle cx="294" cy="194" r="15" fill="rgba(11,95,255,.09)" stroke="rgba(11,95,255,.32)" stroke-width="1.5"/><circle cx="294" cy="194" r="6" fill="rgba(11,95,255,.2)"/><text x="180" y="48" text-anchor="middle" fill="rgba(11,95,255,.2)" font-family="Barlow Condensed" font-size="8" letter-spacing="3">GT VOLANTE</text></svg></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(4,8,16,.9),transparent 60%);"></div>
+          <div style="position:absolute;top:1rem;left:1rem;z-index:2;"><span class="b-tag" style="background:rgba(11,95,255,.6);">CONVERTIBLE</span></div>
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:1.25rem;z-index:2;"><div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.35rem;color:var(--white);margin-bottom:.35rem;">GT Volante</div><div style="display:flex;gap:.4rem;"><span class="pill">650 HP</span><span class="pill">Convertible</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bespoke CTA -->
+  <div style="border-top:1px solid rgba(11,95,255,.1);padding:5rem 2rem;text-align:center;background:radial-gradient(ellipse at center,rgba(11,95,255,.06),transparent 60%);">
+    <div class="label" style="margin-bottom:1rem;">Bespoke Programme</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:2.5rem;font-weight:300;color:var(--white);margin-bottom:1rem;line-height:1.2;">Don't See What You Imagined?</h2>
+    <p style="max-width:480px;margin:0 auto 2rem;line-height:1.85;font-weight:300;">Our atelier crafts unique one-off commissions for the most discerning collectors.</p>
+    <button class="btn btn-p" onclick="go('contact')">Begin Bespoke Enquiry</button>
+  </div>
+  <div id="footer-cars"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CAR DETAIL PAGE
+═══════════════════════════════════════════════════════════════ -->
+<div id="page-detail" class="page">
+  <div style="padding-top:72px;">
+    <div id="dHero" style="min-height:88vh;display:flex;align-items:flex-end;position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(4,8,16,1) 0%,rgba(4,8,16,.35) 45%,transparent 70%);z-index:1;"></div>
+      <div id="dHeroCar" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:0;"></div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:50%;background:radial-gradient(ellipse at 50% 100%,rgba(11,95,255,.12),transparent 70%);z-index:0;pointer-events:none;"></div>
+      <div style="position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:3rem 2rem;width:100%;">
+        <div id="dTag" style="margin-bottom:1rem;display:flex;gap:.5rem;"></div>
+        <h1 id="dName" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(3rem,6vw,5.5rem);font-weight:300;color:var(--white);line-height:1.05;margin-bottom:.5rem;"></h1>
+        <div id="dSub" style="font-family:'Barlow Condensed',sans-serif;letter-spacing:.22em;font-size:.78rem;color:var(--blue-l);margin-bottom:2rem;"></div>
+        <div id="dSpecsRow" style="display:flex;gap:3rem;flex-wrap:wrap;margin-bottom:2.5rem;"></div>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+          <button class="btn btn-p" onclick="go('contact')">Reserve This Model</button>
+          <button class="btn btn-g" onclick="go('config')">Configure</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="max-width:1200px;margin:0 auto;padding:1.25rem 2rem;">
+      <button onclick="go('cars')" style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;letter-spacing:.15em;color:var(--mist);background:none;border:none;cursor:pointer;transition:color .3s;" onmouseover="this.style.color='var(--blue-l)'" onmouseout="this.style.color='var(--mist)'">← BACK TO ALL MODELS</button>
+    </div>
+
+    <!-- Tabs -->
+    <div style="border-bottom:1px solid rgba(11,95,255,.14);background:rgba(7,13,26,.96);position:sticky;top:72px;z-index:100;backdrop-filter:blur(20px);">
+      <div style="max-width:1200px;margin:0 auto;padding:0 2rem;display:flex;overflow-x:auto;">
+        <button class="tab-btn active" onclick="switchTab('dov',this)">Overview</button>
+        <button class="tab-btn" onclick="switchTab('dsp',this)">Specifications</button>
+        <button class="tab-btn" onclick="switchTab('dpe',this)">Performance</button>
+        <button class="tab-btn" onclick="switchTab('dbe',this)">Bespoke</button>
+      </div>
+    </div>
+
+    <div id="dov" style="max-width:1200px;margin:0 auto;padding:5rem 2rem;">
+      <div class="detail-2col" style="display:grid;grid-template-columns:3fr 2fr;gap:5rem;">
+        <div>
+          <div class="label" style="margin-bottom:1rem;">The Vision</div>
+          <h2 id="dOvH" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:2.4rem;font-weight:300;color:var(--white);margin-bottom:1.5rem;line-height:1.2;"></h2>
+          <p id="dOvP1" style="line-height:1.9;margin-bottom:1.25rem;font-weight:300;"></p>
+          <p id="dOvP2" style="line-height:1.9;font-weight:300;font-size:.95rem;"></p>
+        </div>
+        <div class="glass" style="padding:2rem;align-self:start;">
+          <div class="label" style="margin-bottom:1.5rem;">At a Glance</div>
+          <div id="dGlance"></div>
+        </div>
+      </div>
+    </div>
+    <div id="dsp" style="display:none;max-width:1200px;margin:0 auto;padding:5rem 2rem;">
+      <div class="label" style="margin-bottom:2rem;">Technical Specifications</div>
+      <div id="dSpecTable" style="display:grid;grid-template-columns:1fr 1fr;border:1px solid rgba(11,95,255,.14);"></div>
+    </div>
+    <div id="dpe" style="display:none;max-width:1200px;margin:0 auto;padding:5rem 2rem;">
+      <div class="detail-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;">
+        <div>
+          <div class="label" style="margin-bottom:1rem;">Performance Data</div>
+          <h2 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:2.4rem;font-weight:300;color:var(--white);margin-bottom:2rem;line-height:1.2;">Built to Dominate<br>Every Road</h2>
+          <div id="dPerfStats" style="display:grid;gap:1px;background:rgba(11,95,255,.1);"></div>
+        </div>
+        <div style="text-align:center;padding:3rem;border:1px solid rgba(11,95,255,.14);background:rgba(11,95,255,.03);">
+          <div id="dBigStat" style="font-family:'Cormorant Garamond',serif;font-size:7rem;font-weight:300;line-height:1;color:var(--white);"></div>
+          <div id="dBigLabel" class="label" style="margin-bottom:.5rem;"></div>
+          <p style="font-size:.82rem;line-height:1.7;font-weight:300;">Full hybrid deployment, maximum power in under 200 milliseconds.</p>
+        </div>
+      </div>
+    </div>
+    <div id="dbe" style="display:none;max-width:1200px;margin:0 auto;padding:5rem 2rem;">
+      <div class="detail-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;">
+        <div>
+          <div class="label" style="margin-bottom:1rem;">Personalisation</div>
+          <h2 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:2.4rem;font-weight:300;color:var(--white);margin-bottom:1.5rem;line-height:1.2;">Your Car.<br>Your Signature.</h2>
+          <p style="line-height:1.9;margin-bottom:1.5rem;font-weight:300;">Every Veloce leaves Modena as a singular object. Our bespoke programme allows limitless customisation — from paint formulations to hand-stitched interiors.</p>
+          <button class="btn btn-p" onclick="go('config')">Begin Configuration</button>
+        </div>
+        <div style="display:grid;gap:1rem;">
+          <div class="glass" style="padding:1.4rem;"><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.1em;color:var(--white);margin-bottom:.4rem;font-size:.8rem;">EXTERIOR PAINT</div><div style="font-size:.8rem;line-height:1.7;font-weight:300;">2.8M+ colour combinations. Custom lacquer, satin, matte & chromatic finishes.</div></div>
+          <div class="glass" style="padding:1.4rem;"><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.1em;color:var(--white);margin-bottom:.4rem;font-size:.8rem;">INTERIOR LEATHER</div><div style="font-size:.8rem;line-height:1.7;font-weight:300;">Hand-selected hides, suede & Alcantara. Custom embroidery by our artisans.</div></div>
+          <div class="glass" style="padding:1.4rem;"><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.1em;color:var(--white);margin-bottom:.4rem;font-size:.8rem;">CARBON WEAVE</div><div style="font-size:.8rem;line-height:1.7;font-weight:300;">Forged, woven, or directional patterns. Gold, silver & coloured tow available.</div></div>
+          <div class="glass" style="padding:1.4rem;"><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.1em;color:var(--white);margin-bottom:.4rem;font-size:.8rem;">WHEELS & BRAKES</div><div style="font-size:.8rem;line-height:1.7;font-weight:300;">Forged magnesium alloys. Brembo carbon-ceramic with custom caliper finish.</div></div>
+        </div>
+      </div>
+    </div>
+    <div id="footer-detail"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CONFIGURATOR PAGE
+═══════════════════════════════════════════════════════════════ -->
+<div id="page-config" class="page">
+  <div style="padding-top:72px;min-height:100vh;">
+    <div style="border-bottom:1px solid rgba(11,95,255,.14);padding:3rem 2rem;background:var(--navy-l);">
+      <div style="max-width:1200px;margin:0 auto;">
+        <div class="label" style="margin-bottom:.75rem;">Bespoke Configuration</div>
+        <h1 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(2.5rem,4vw,4rem);font-weight:300;color:var(--white);line-height:1.1;">Build Your Veloce</h1>
+      </div>
+    </div>
+
+    <div class="config-layout" style="max-width:1200px;margin:0 auto;padding:3rem 2rem;display:grid;grid-template-columns:1fr 380px;gap:3rem;align-items:start;">
+      <!-- Preview panel -->
+      <div>
+        <!-- Model selector -->
+        <div style="margin-bottom:2.5rem;">
+          <div class="label" style="margin-bottom:1rem;">Select Model</div>
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+            <button class="config-option active" onclick="selectModel('VX-1',this)">VX-1 Hypercar</button>
+            <button class="config-option" onclick="selectModel('SR',this)">SR Supercar</button>
+            <button class="config-option" onclick="selectModel('GT',this)">GT Grand Tourer</button>
+            <button class="config-option" onclick="selectModel('APEX',this)">APEX Track</button>
+          </div>
+        </div>
+
+        <!-- Car preview -->
+        <div style="border:1px solid rgba(11,95,255,.15);background:linear-gradient(135deg,#060c18,#080f1e);position:relative;overflow:hidden;margin-bottom:2.5rem;">
+          <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 80%,rgba(11,95,255,.1),transparent 60%);pointer-events:none;"></div>
+          <div id="configCarPreview" style="height:340px;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;">
+            <svg viewBox="0 0 600 320" xmlns="http://www.w3.org/2000/svg" style="width:85%;">
+              <defs><radialGradient id="pcg" cx="50%" cy="65%" r="50%"><stop offset="0%" stop-color="#0B5FFF" stop-opacity=".18"/><stop offset="100%" stop-color="#040810" stop-opacity="0"/></radialGradient></defs>
+              <ellipse cx="300" cy="300" rx="280" ry="16" fill="rgba(11,95,255,.28)"/>
+              <rect x="0" y="0" width="600" height="320" fill="url(#pcg)"/>
+              <path d="M45 248 Q78 178 198 145 Q275 102 325 95 Q418 82 522 152 Q568 185 580 240 Q585 262 582 255Z" id="carBody" fill="rgba(11,95,255,.12)" stroke="rgba(11,95,255,.7)" stroke-width="2"/>
+              <path d="M85 248 Q175 208 285 182 Q395 158 495 195 Q545 218 565 242" fill="none" stroke="rgba(11,95,255,.9)" stroke-width="2"/>
+              <path d="M145 148 Q228 118 326 112 Q420 108 500 150" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="1"/>
+              <circle cx="155" cy="256" r="44" fill="none" stroke="rgba(11,95,255,.7)" stroke-width="10" id="wheel1"/>
+              <circle cx="155" cy="256" r="27" fill="rgba(11,95,255,.15)" stroke="rgba(11,95,255,.5)" stroke-width="3"/>
+              <circle cx="155" cy="256" r="11" fill="rgba(11,95,255,.35)"/>
+              <circle cx="462" cy="256" r="44" fill="none" stroke="rgba(11,95,255,.7)" stroke-width="10" id="wheel2"/>
+              <circle cx="462" cy="256" r="27" fill="rgba(11,95,255,.15)" stroke="rgba(11,95,255,.5)" stroke-width="3"/>
+              <circle cx="462" cy="256" r="11" fill="rgba(11,95,255,.35)"/>
+              <path d="M325 95 L358 62 L388 88" fill="none" stroke="rgba(11,95,255,.4)" stroke-width="1.5"/>
+              <text x="300" y="40" text-anchor="middle" fill="rgba(11,95,255,.3)" font-family="Barlow Condensed" font-size="9" letter-spacing="4" id="configModelLabel">VELOCE VX-1</text>
+            </svg>
+          </div>
+          <!-- Color tint overlay -->
+          <div id="colorOverlay" style="position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .5s;mix-blend-mode:color;"></div>
+          <!-- Labels -->
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:1.25rem;display:flex;justify-content:space-between;align-items:center;">
+            <div id="configModelName" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.4rem;color:var(--white);">Veloce VX-1</div>
+            <div id="configColor" style="font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:.18em;color:var(--blue-l);">AZZURRO INFINITO</div>
+          </div>
+        </div>
+
+        <!-- Exterior Colour -->
+        <div style="margin-bottom:2.5rem;">
+          <div class="label" style="margin-bottom:1rem;">Exterior Colour</div>
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:.75rem;">
+            <div class="config-swatch active" style="background:#0B5FFF;" title="Azzurro Infinito" onclick="selectColor('#0B5FFF','Azzurro Infinito',this)"></div>
+            <div class="config-swatch" style="background:#C0B8A8;" title="Bianco Puro" onclick="selectColor('#C0B8A8','Bianco Puro',this)"></div>
+            <div class="config-swatch" style="background:#1a1a1a;" title="Nero Assoluto" onclick="selectColor('#1a1a1a','Nero Assoluto',this)"></div>
+            <div class="config-swatch" style="background:#8B0000;" title="Rosso Corsa" onclick="selectColor('#8B0000','Rosso Corsa',this)"></div>
+            <div class="config-swatch" style="background:#2D4A22;" title="Verde Mantis" onclick="selectColor('#2D4A22','Verde Mantis',this)"></div>
+            <div class="config-swatch" style="background:#4A3728;" title="Marrone Terra" onclick="selectColor('#4A3728','Marrone Terra',this)"></div>
+            <div class="config-swatch" style="background:#6B5B95;" title="Viola Elettrico" onclick="selectColor('#6B5B95','Viola Elettrico',this)"></div>
+            <div class="config-swatch" style="background:linear-gradient(135deg,#C0C0C0,#808080);" title="Argento Specchio" onclick="selectColor('#A8A8A8','Argento Specchio',this)"></div>
+          </div>
+        </div>
+
+        <!-- Finish -->
+        <div style="margin-bottom:2.5rem;">
+          <div class="label" style="margin-bottom:1rem;">Paint Finish</div>
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+            <button class="config-option active" onclick="selectOpt(this,'finish')">Gloss</button>
+            <button class="config-option" onclick="selectOpt(this,'finish')">Satin</button>
+            <button class="config-option" onclick="selectOpt(this,'finish')">Matte</button>
+            <button class="config-option" onclick="selectOpt(this,'finish')">Chromatic</button>
+          </div>
+        </div>
+
+        <!-- Interior -->
+        <div style="margin-bottom:2.5rem;">
+          <div class="label" style="margin-bottom:1rem;">Interior Leather</div>
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+            <button class="config-option active" onclick="selectOpt(this,'interior')">Nero</button>
+            <button class="config-option" onclick="selectOpt(this,'interior')">Cognac</button>
+            <button class="config-option" onclick="selectOpt(this,'interior')">Crema</button>
+            <button class="config-option" onclick="selectOpt(this,'interior')">Bordeaux</button>
+            <button class="config-option" onclick="selectOpt(this,'interior')">Blu Notte</button>
+          </div>
+        </div>
+
+        <!-- Carbon -->
+        <div style="margin-bottom:2.5rem;">
+          <div class="label" style="margin-bottom:1rem;">Carbon Weave</div>
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+            <button class="config-option active" onclick="selectOpt(this,'carbon')">Standard</button>
+            <button class="config-option" onclick="selectOpt(this,'carbon')">Forged</button>
+            <button class="config-option" onclick="selectOpt(this,'carbon')">Gold Tow</button>
+            <button class="config-option" onclick="selectOpt(this,'carbon')">Silver Tow</button>
+          </div>
+        </div>
+
+        <!-- Wheels -->
+        <div style="margin-bottom:2rem;">
+          <div class="label" style="margin-bottom:1rem;">Wheel Design</div>
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+            <button class="config-option active" onclick="selectOpt(this,'wheel')">Aero 5-Spoke</button>
+            <button class="config-option" onclick="selectOpt(this,'wheel')">Forged 10-Spoke</button>
+            <button class="config-option" onclick="selectOpt(this,'wheel')">Turbine Blade</button>
+            <button class="config-option" onclick="selectOpt(this,'wheel')">Track Centre-Lock</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary panel (sticky) -->
+      <div style="position:sticky;top:100px;">
+        <div class="glass" style="padding:2rem;margin-bottom:1rem;">
+          <div class="label" style="margin-bottom:1.5rem;">Your Configuration</div>
+          <div style="display:grid;gap:.85rem;margin-bottom:1.5rem;">
+            <div style="display:flex;justify-content:space-between;padding-bottom:.85rem;border-bottom:1px solid rgba(11,95,255,.1);">
+              <span style="font-size:.8rem;font-weight:300;">Model</span>
+              <span id="sum-model" style="font-family:'Barlow Condensed',sans-serif;font-size:.8rem;letter-spacing:.1em;color:var(--white);">VX-1 HYPERCAR</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding-bottom:.85rem;border-bottom:1px solid rgba(11,95,255,.1);">
+              <span style="font-size:.8rem;font-weight:300;">Colour</span>
+              <span id="sum-color" style="font-family:'Barlow Condensed',sans-serif;font-size:.8rem;letter-spacing:.1em;color:var(--white);">AZZURRO INFINITO</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding-bottom:.85rem;border-bottom:1px solid rgba(11,95,255,.1);">
+              <span style="font-size:.8rem;font-weight:300;">Finish</span>
+              <span id="sum-finish" style="font-family:'Barlow Condensed',sans-serif;font-size:.8rem;letter-spacing:.1em;color:var(--white);">GLOSS</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding-bottom:.85rem;border-bottom:1px solid rgba(11,95,255,.1);">
+              <span style="font-size:.8rem;font-weight:300;">Interior</span>
+              <span id="sum-interior" style="font-family:'Barlow Condensed',sans-serif;font-size:.8rem;letter-spacing:.1em;color:var(--white);">NERO</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding-bottom:.85rem;border-bottom:1px solid rgba(11,95,255,.1);">
+              <span style="font-size:.8rem;font-weight:300;">Carbon</span>
+              <span id="sum-carbon" style="font-family:'Barlow Condensed',sans-serif;font-size:.8rem;letter-spacing:.1em;color:var(--white);">STANDARD</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <span style="font-size:.8rem;font-weight:300;">Wheels</span>
+              <span id="sum-wheel" style="font-family:'Barlow Condensed',sans-serif;font-size:.8rem;letter-spacing:.1em;color:var(--white);">AERO 5-SPOKE</span>
+            </div>
+          </div>
+          <div style="border-top:1px solid rgba(11,95,255,.2);padding-top:1.25rem;margin-bottom:1.25rem;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;">
+              <span style="font-size:.8rem;font-weight:300;">Starting from</span>
+              <span id="sum-price" style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--white);font-weight:300;">€2,400,000</span>
+            </div>
+            <div style="font-size:.7rem;opacity:.5;margin-top:.25rem;font-weight:300;">Excludes taxes. Final price confirmed on order.</div>
+          </div>
+          <button class="btn btn-p" style="width:100%;margin-bottom:.75rem;" onclick="go('contact')">Request This Build</button>
+          <button class="btn btn-g" style="width:100%;font-size:.7rem;">Save Configuration</button>
+        </div>
+        <div style="font-size:.72rem;line-height:1.7;font-weight:300;opacity:.5;text-align:center;">All configurations are indicative. Final specification is confirmed with your dedicated Veloce consultant.</div>
+      </div>
+    </div>
+    <div id="footer-config"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     ABOUT PAGE
+═══════════════════════════════════════════════════════════════ -->
+<div id="page-about" class="page">
+  <div style="padding-top:72px;">
+    <div style="min-height:68vh;display:flex;align-items:center;position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 30% 70%,rgba(11,95,255,.1),transparent 60%);"></div>
+      <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(11,95,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(11,95,255,.025) 1px,transparent 1px);background-size:80px 80px;"></div>
+      <div style="position:absolute;right:0;top:0;bottom:0;width:42%;background:linear-gradient(135deg,transparent,rgba(11,95,255,.04));clip-path:polygon(18% 0,100% 0,100% 100%,0% 100%);"></div>
+      <div style="max-width:1200px;margin:0 auto;padding:5rem 2rem;position:relative;z-index:1;">
+        <div class="label" style="margin-bottom:1.5rem;display:flex;align-items:center;gap:.75rem;"><span style="display:inline-block;width:28px;height:1px;background:var(--blue);"></span>Atelier Automobili — Modena, Italy</div>
+        <h1 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(3rem,5vw,5.5rem);font-weight:300;color:var(--white);line-height:1.05;margin-bottom:2rem;max-width:700px;">A Story Written<br>in Speed & Craft</h1>
+        <p style="max-width:520px;line-height:1.9;font-weight:300;font-size:1rem;">Founded in 2009 by Luca Ferri and a team of ex-Formula One engineers, Veloce exists to prove that a car can be simultaneously the most beautiful and most capable machine ever made.</p>
+      </div>
+    </div>
+
+    <!-- Manifesto -->
+    <section style="padding:6rem 2rem;background:var(--navy-l);border-top:1px solid rgba(11,95,255,.1);border-bottom:1px solid rgba(11,95,255,.1);">
+      <div style="max-width:900px;margin:0 auto;text-align:center;">
+        <div class="label-lined reveal" style="margin-bottom:2.5rem;"><div class="ll"></div><span class="label">The Veloce Manifesto</span><div class="ll ll-r"></div></div>
+        <blockquote class="reveal" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(1.6rem,3vw,2.4rem);font-weight:300;color:var(--white);line-height:1.45;margin-bottom:2rem;">"We do not build cars for people who drive.<br>We build cars for people who <em style="color:var(--blue-l);">feel.</em>"</blockquote>
+        <div class="reveal label">LUCA FERRI — FOUNDER & CHIEF DESIGNER</div>
+      </div>
+    </section>
+
+    <!-- Timeline -->
+    <section style="padding:8rem 2rem;">
+      <div style="max-width:1000px;margin:0 auto;">
+        <div class="label" style="margin-bottom:1rem;text-align:center;">Heritage</div>
+        <h2 class="reveal" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:3rem;font-weight:300;color:var(--white);text-align:center;margin-bottom:5rem;">Our Journey</h2>
+        <div style="position:relative;">
+          <div class="tl-line"></div>
+          <div class="about-2col reveal" style="display:grid;grid-template-columns:1fr 1fr;margin-bottom:3rem;">
+            <div class="tl-left" style="text-align:right;padding-right:3rem;"><div style="font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:300;color:rgba(11,95,255,.4);line-height:1;">2009</div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.1em;color:var(--white);margin-bottom:.4rem;font-size:.82rem;">FOUNDED IN MODENA</div><div style="font-size:.83rem;line-height:1.75;font-weight:300;">Luca Ferri assembles F1 engineers and master coachbuilders in a repurposed Renaissance factory.</div></div>
+            <div class="tl-right" style="padding-left:3rem;"></div>
+          </div>
+          <div class="about-2col reveal" style="display:grid;grid-template-columns:1fr 1fr;margin-bottom:3rem;">
+            <div style="padding-right:3rem;"></div>
+            <div class="tl-right" style="padding-left:3rem;"><div style="font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:300;color:rgba(11,95,255,.4);line-height:1;">2012</div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.1em;color:var(--white);margin-bottom:.4rem;font-size:.82rem;">GENEVA DEBUT</div><div style="font-size:.83rem;line-height:1.75;font-weight:300;">The Veloce Prototipo breaks cover — 720 horsepower, carbon monocoque, a roofline that silences the room.</div></div>
+          </div>
+          <div class="about-2col reveal" style="display:grid;grid-template-columns:1fr 1fr;margin-bottom:3rem;">
+            <div class="tl-left" style="text-align:right;padding-right:3rem;"><div style="font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:300;color:rgba(11,95,255,.4);line-height:1;">2015</div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.1em;color:var(--white);margin-bottom:.4rem;font-size:.82rem;">VX-1 PRODUCTION BEGINS</div><div style="font-size:.83rem;line-height:1.75;font-weight:300;">First VX-1 delivered to a Swiss collector. Six-year waiting list forms within weeks.</div></div>
+            <div style="padding-left:3rem;"></div>
+          </div>
+          <div class="about-2col reveal" style="display:grid;grid-template-columns:1fr 1fr;margin-bottom:3rem;">
+            <div style="padding-right:3rem;"></div>
+            <div class="tl-right" style="padding-left:3rem;"><div style="font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:300;color:rgba(11,95,255,.4);line-height:1;">2019</div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.1em;color:var(--white);margin-bottom:.4rem;font-size:.82rem;">NÜRBURGRING RECORD</div><div style="font-size:.83rem;line-height:1.75;font-weight:300;">Veloce APEX sets the production car lap record — 6:12.4. A record that still stands.</div></div>
+          </div>
+          <div class="about-2col reveal" style="display:grid;grid-template-columns:1fr 1fr;">
+            <div class="tl-left" style="text-align:right;padding-right:3rem;"><div style="font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:300;color:var(--blue);line-height:1;">2024</div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.1em;color:var(--white);margin-bottom:.4rem;font-size:.82rem;">THE HYBRID ERA</div><div style="font-size:.83rem;line-height:1.75;font-weight:300;">VX-1 goes full hybrid — 1,050 combined horsepower. Zero compromise on character.</div></div>
+            <div style="padding-left:3rem;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- World Map -->
+    <section style="padding:6rem 2rem;background:var(--navy-l);border-top:1px solid rgba(11,95,255,.1);">
+      <div style="max-width:1200px;margin:0 auto;">
+        <div style="margin-bottom:3rem;text-align:center;">
+          <div class="label" style="margin-bottom:1rem;">Global Presence</div>
+          <h2 class="reveal" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:2.5rem;font-weight:300;color:var(--white);">Veloce Around the World</h2>
+        </div>
+        <div class="reveal" style="max-width:900px;margin:0 auto;position:relative;">
+          <svg viewBox="0 0 900 450" xmlns="http://www.w3.org/2000/svg" style="width:100%;opacity:.85;">
+            <line x1="0" y1="225" x2="900" y2="225" stroke="rgba(11,95,255,.06)" stroke-width=".5"/>
+            <line x1="450" y1="0" x2="450" y2="450" stroke="rgba(11,95,255,.06)" stroke-width=".5"/>
+            <path d="M80 100 Q95 84 122 79 Q146 74 168 90 Q188 106 192 132 Q196 156 186 177 Q176 196 165 207 Q154 216 144 210 Q129 204 118 189 Q104 174 94 153 Q80 128 80 100Z" fill="none" stroke="rgba(11,95,255,.22)" stroke-width="1"/>
+            <path d="M100 212 Q116 200 132 206 Q152 212 162 228 Q172 242 168 262 Q162 278 150 283 Q134 284 120 273 Q108 262 102 246 Q96 230 100 212Z" fill="none" stroke="rgba(11,95,255,.18)" stroke-width="1"/>
+            <path d="M148 292 Q165 278 180 286 Q198 296 204 317 Q212 342 206 367 Q200 392 188 406 Q175 416 160 412 Q142 403 134 382 Q127 358 130 330 Q132 308 148 292Z" fill="none" stroke="rgba(11,95,255,.18)" stroke-width="1"/>
+            <path d="M380 88 Q400 78 426 80 Q447 83 458 94 Q468 108 462 124 Q456 138 440 144 Q424 150 406 144 Q388 136 380 120 Q372 102 380 88Z" fill="none" stroke="rgba(11,95,255,.28)" stroke-width="1"/>
+            <path d="M388 156 Q414 144 442 150 Q465 158 470 184 Q478 210 472 240 Q467 270 452 292 Q434 312 408 314 Q382 312 365 290 Q350 266 353 240 Q356 210 363 184 Q370 162 388 156Z" fill="none" stroke="rgba(11,95,255,.16)" stroke-width="1"/>
+            <path d="M472 76 Q512 63 562 68 Q608 74 642 95 Q672 112 680 140 Q688 167 674 190 Q660 212 630 220 Q596 228 560 220 Q520 212 492 194 Q464 174 460 146 Q456 118 472 76Z" fill="none" stroke="rgba(11,95,255,.2)" stroke-width="1"/>
+            <path d="M668 268 Q702 255 732 262 Q757 270 764 295 Q770 322 756 344 Q740 362 714 363 Q686 363 668 342 Q652 320 655 296 Q658 272 668 268Z" fill="none" stroke="rgba(11,95,255,.16)" stroke-width="1"/>
+            <!-- HQ pulse dot Modena -->
+            <circle class="wdot" cx="418" cy="118" r="7"/>
+            <circle cx="418" cy="118" r="7" fill="none" stroke="rgba(11,95,255,.5)" stroke-width="1"><animate attributeName="r" from="7" to="22" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" from=".8" to="0" dur="2s" repeatCount="indefinite"/></circle>
+            <text x="430" y="114" fill="rgba(11,95,255,.85)" font-family="Barlow Condensed" font-size="8" letter-spacing="1.5">MODENA HQ</text>
+            <!-- Other dots -->
+            <circle class="wdot" cx="398" cy="100" r="4"/><text x="406" y="97" fill="rgba(138,155,191,.65)" font-family="Barlow Condensed" font-size="7" letter-spacing="1">LONDON</text>
+            <circle class="wdot" cx="165" cy="122" r="4"/><text x="173" y="119" fill="rgba(138,155,191,.65)" font-family="Barlow Condensed" font-size="7" letter-spacing="1">NEW YORK</text>
+            <circle class="wdot" cx="524" cy="162" r="4"/><text x="532" y="159" fill="rgba(138,155,191,.65)" font-family="Barlow Condensed" font-size="7" letter-spacing="1">DUBAI</text>
+            <circle class="wdot" cx="670" cy="132" r="4"/><text x="678" y="129" fill="rgba(138,155,191,.65)" font-family="Barlow Condensed" font-size="7" letter-spacing="1">TOKYO</text>
+            <circle class="wdot" cx="637" cy="212" r="4"/><text x="645" y="209" fill="rgba(138,155,191,.65)" font-family="Barlow Condensed" font-size="7" letter-spacing="1">SINGAPORE</text>
+            <circle class="wdot" cx="88" cy="147" r="4"/><text x="96" y="144" fill="rgba(138,155,191,.65)" font-family="Barlow Condensed" font-size="7" letter-spacing="1">LOS ANGELES</text>
+          </svg>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;margin-top:4rem;">
+          <div class="reveal" style="text-align:center;"><div style="font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:300;color:var(--white);">6</div><div class="label" style="font-size:.62rem;">Global Showrooms</div></div>
+          <div class="reveal" style="text-align:center;transition-delay:.1s;"><div style="font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:300;color:var(--white);">84</div><div class="label" style="font-size:.62rem;">Countries Reached</div></div>
+          <div class="reveal" style="text-align:center;transition-delay:.2s;"><div style="font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:300;color:var(--white);">147</div><div class="label" style="font-size:.62rem;">Cars Delivered</div></div>
+          <div class="reveal" style="text-align:center;transition-delay:.3s;"><div style="font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:300;color:var(--white);">15</div><div class="label" style="font-size:.62rem;">Years of Excellence</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Values -->
+    <section style="padding:8rem 2rem;">
+      <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;" class="cards-3">
+        <div class="feat-card reveal"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue-l)" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.3rem;color:var(--white);margin-bottom:.75rem;">Uncompromised Craft</div><div style="font-size:.83rem;line-height:1.8;font-weight:300;">Every component is touched by human hands. 14,000 hours of skilled labour. No shortcuts, no compromises.</div></div>
+        <div class="feat-card reveal" style="transition-delay:.15s;"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue-l)" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg></div><div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.3rem;color:var(--white);margin-bottom:.75rem;">Engineering Obsession</div><div style="font-size:.83rem;line-height:1.8;font-weight:300;">Our engineers iterate until the answer isn't 'good enough' — but 'impossible to improve'. That is the Veloce standard.</div></div>
+        <div class="feat-card reveal" style="transition-delay:.3s;"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue-l)" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div><div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.3rem;color:var(--white);margin-bottom:.75rem;">Sustainable Future</div><div style="font-size:.83rem;line-height:1.8;font-weight:300;">Our hybrid programme is the first step toward a fully electrified Veloce lineage — without sacrificing emotion.</div></div>
+      </div>
+    </section>
+    <div id="footer-about"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CONTACT PAGE
+═══════════════════════════════════════════════════════════════ -->
+<div id="page-contact" class="page">
+  <div style="padding-top:72px;">
+    <div class="contact-split" style="display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 72px);">
+      <div style="background:var(--navy-l);border-right:1px solid rgba(11,95,255,.1);padding:5rem 4rem;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;">
+        <div style="position:absolute;bottom:-40%;right:-25%;width:75%;height:75%;background:radial-gradient(ellipse,rgba(11,95,255,.06),transparent 70%);pointer-events:none;"></div>
+        <div style="position:relative;z-index:1;">
+          <div class="label" style="margin-bottom:1.5rem;">Get in Touch</div>
+          <h1 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:3.5rem;font-weight:300;color:var(--white);line-height:1.1;margin-bottom:1.5rem;">Let's Begin<br>Your Journey</h1>
+          <p style="line-height:1.9;font-weight:300;margin-bottom:3rem;max-width:400px;">Whether enquiring about a model, beginning a bespoke commission, or wanting to experience a Veloce in person — our team is ready.</p>
+          <div style="display:grid;gap:1.5rem;margin-bottom:3rem;">
+            <div style="display:flex;gap:1rem;align-items:flex-start;">
+              <div style="width:36px;height:36px;background:rgba(11,95,255,.1);border:1px solid rgba(11,95,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--blue-l)" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+              <div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.12em;color:var(--white);font-size:.76rem;margin-bottom:.25rem;">HEADQUARTERS</div><div style="font-size:.83rem;line-height:1.7;font-weight:300;">Via Emilia Ovest 12, 41122<br>Modena MO, Italy</div></div>
+            </div>
+            <div style="display:flex;gap:1rem;align-items:flex-start;">
+              <div style="width:36px;height:36px;background:rgba(11,95,255,.1);border:1px solid rgba(11,95,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--blue-l)" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.8 19.79 19.79 0 01.07 2.18 2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14z"/></svg></div>
+              <div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.12em;color:var(--white);font-size:.76rem;margin-bottom:.25rem;">PRIVATE LINE</div><div style="font-size:.83rem;line-height:1.7;font-weight:300;">+39 059 123 4567</div></div>
+            </div>
+            <div style="display:flex;gap:1rem;align-items:flex-start;">
+              <div style="width:36px;height:36px;background:rgba(11,95,255,.1);border:1px solid rgba(11,95,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--blue-l)" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+              <div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.12em;color:var(--white);font-size:.76rem;margin-bottom:.25rem;">ENQUIRIES</div><div style="font-size:.83rem;line-height:1.7;font-weight:300;">contact@veloceauto.com</div></div>
+            </div>
+          </div>
+          <div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.15em;color:var(--white);font-size:.7rem;margin-bottom:.75rem;text-transform:uppercase;">Global Showrooms</div>
+            <div style="display:flex;flex-wrap:wrap;gap:.5rem;">
+              <span style="font-family:'Barlow Condensed',sans-serif;font-size:.68rem;letter-spacing:.1em;padding:.28rem .7rem;border:1px solid rgba(11,95,255,.2);color:var(--mist);">MODENA</span>
+              <span style="font-family:'Barlow Condensed',sans-serif;font-size:.68rem;letter-spacing:.1em;padding:.28rem .7rem;border:1px solid rgba(11,95,255,.2);color:var(--mist);">LONDON</span>
+              <span style="font-family:'Barlow Condensed',sans-serif;font-size:.68rem;letter-spacing:.1em;padding:.28rem .7rem;border:1px solid rgba(11,95,255,.2);color:var(--mist);">NEW YORK</span>
+              <span style="font-family:'Barlow Condensed',sans-serif;font-size:.68rem;letter-spacing:.1em;padding:.28rem .7rem;border:1px solid rgba(11,95,255,.2);color:var(--mist);">DUBAI</span>
+              <span style="font-family:'Barlow Condensed',sans-serif;font-size:.68rem;letter-spacing:.1em;padding:.28rem .7rem;border:1px solid rgba(11,95,255,.2);color:var(--mist);">TOKYO</span>
+              <span style="font-family:'Barlow Condensed',sans-serif;font-size:.68rem;letter-spacing:.1em;padding:.28rem .7rem;border:1px solid rgba(11,95,255,.2);color:var(--mist);">SINGAPORE</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:5rem 4rem;display:flex;flex-direction:column;justify-content:center;overflow-y:auto;">
+        <div style="max-width:480px;margin:0 auto;width:100%;">
+          <h2 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:2rem;color:var(--white);margin-bottom:.4rem;font-weight:300;">Send an Enquiry</h2>
+          <p style="font-size:.82rem;font-weight:300;margin-bottom:2.5rem;">A member of our team responds within 24 hours.</p>
+          <div style="display:grid;gap:1.2rem;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+              <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:.66rem;letter-spacing:.18em;color:var(--white);margin-bottom:.45rem;">FIRST NAME</div><input type="text" class="v-input" placeholder="Alessandro"></div>
+              <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:.66rem;letter-spacing:.18em;color:var(--white);margin-bottom:.45rem;">LAST NAME</div><input type="text" class="v-input" placeholder="Romano"></div>
+            </div>
+            <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:.66rem;letter-spacing:.18em;color:var(--white);margin-bottom:.45rem;">EMAIL ADDRESS</div><input type="email" class="v-input" placeholder="your@email.com"></div>
+            <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:.66rem;letter-spacing:.18em;color:var(--white);margin-bottom:.45rem;">TELEPHONE</div><input type="tel" class="v-input" placeholder="+1 (555) 000-0000"></div>
+            <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:.66rem;letter-spacing:.18em;color:var(--white);margin-bottom:.45rem;">ENQUIRY TYPE</div><select class="v-input" style="cursor:pointer;"><option value="" disabled selected>Select enquiry type</option><option>Model Reservation</option><option>Bespoke Commission</option><option>Test Drive</option><option>Aftersales & Service</option><option>Press & Media</option><option>General Enquiry</option></select></div>
+            <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:.66rem;letter-spacing:.18em;color:var(--white);margin-bottom:.45rem;">MODEL OF INTEREST</div><select class="v-input" style="cursor:pointer;"><option value="" disabled selected>Select a model</option><option>Veloce VX-1 Hypercar</option><option>Veloce SR Supercar</option><option>Veloce GT Grand Tourer</option><option>Veloce APEX Track Edition</option><option>Bespoke Commission</option></select></div>
+            <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:.66rem;letter-spacing:.18em;color:var(--white);margin-bottom:.45rem;">YOUR MESSAGE</div><textarea class="v-input" rows="4" placeholder="Tell us about your vision..." style="resize:vertical;"></textarea></div>
+            <div style="display:flex;align-items:flex-start;gap:.75rem;"><input type="checkbox" id="pc" style="margin-top:3px;accent-color:var(--blue);"><label for="pc" style="font-size:.77rem;line-height:1.6;font-weight:300;cursor:pointer;">I agree to the <a href="#" style="color:var(--blue-l);">Privacy Policy</a> and consent to Veloce processing my data.</label></div>
+            <button class="btn btn-p" style="width:100%;">Submit Enquiry</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="footer-contact"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SIGN IN PAGE
+═══════════════════════════════════════════════════════════════ -->
+<div id="page-signin" class="page">
+  <div style="padding-top:72px;min-height:calc(100vh - 72px);display:flex;flex-direction:column;">
+    <div class="auth-split" style="flex:1;display:grid;grid-template-columns:1fr 1fr;">
+      <div class="right-panel" style="background:var(--navy-l);border-right:1px solid rgba(11,95,255,.1);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:4rem;">
+        <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(11,95,255,.08),transparent 70%);"></div>
+        <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(11,95,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(11,95,255,.035) 1px,transparent 1px);background-size:40px 40px;"></div>
+        <div style="position:relative;z-index:1;text-align:center;max-width:400px;">
+          <svg viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;margin-bottom:2rem;opacity:.7;"><defs><radialGradient id="sgr" cx="50%" cy="60%" r="50%"><stop offset="0%" stop-color="#0B5FFF" stop-opacity=".28"/><stop offset="100%" stop-color="#040810" stop-opacity="0"/></radialGradient></defs><ellipse cx="250" cy="278" rx="236" ry="16" fill="rgba(11,95,255,.32)"/><rect x="0" y="0" width="500" height="300" fill="url(#sgr)"/><path d="M38 242 Q68 175 175 142 Q236 100 282 95 Q362 80 432 142 Q472 172 482 222 Q487 248 485 256Z" fill="rgba(11,95,255,.12)" stroke="rgba(11,95,255,.72)" stroke-width="2"/><path d="M78 242 Q165 202 252 177 Q336 154 432 190 Q464 204 476 234" fill="none" stroke="rgba(11,95,255,.92)" stroke-width="2"/><path d="M138 142 Q222 112 302 110 Q382 110 442 150" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="1"/><circle cx="130" cy="250" r="39" fill="none" stroke="rgba(11,95,255,.72)" stroke-width="9"/><circle cx="130" cy="250" r="24" fill="rgba(11,95,255,.18)" stroke="rgba(11,95,255,.5)" stroke-width="3"/><circle cx="130" cy="250" r="10" fill="rgba(11,95,255,.35)"/><circle cx="390" cy="250" r="39" fill="none" stroke="rgba(11,95,255,.72)" stroke-width="9"/><circle cx="390" cy="250" r="24" fill="rgba(11,95,255,.18)" stroke="rgba(11,95,255,.5)" stroke-width="3"/><circle cx="390" cy="250" r="10" fill="rgba(11,95,255,.35)"/></svg>
+          <h2 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:2.2rem;font-weight:300;color:var(--white);margin-bottom:1rem;line-height:1.2;">Exclusive Access<br>Awaits You</h2>
+          <p style="font-size:.85rem;line-height:1.85;font-weight:300;color:var(--mist);">Sign in to manage your reservation, track your build, and access exclusive owner content.</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;padding:4rem 3rem;overflow-y:auto;">
+        <div style="width:100%;max-width:420px;">
+          <div style="display:flex;border-bottom:1px solid rgba(11,95,255,.14);margin-bottom:2.5rem;">
+            <button id="tab-si" class="tab-btn active" onclick="authTab('si')" style="flex:1;text-align:center;">Sign In</button>
+            <button id="tab-ca" class="tab-btn" onclick="authTab('ca')" style="flex:1;text-align:center;">Create Account</button>
+          </div>
+          <div id="form-si">
+            <h2 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:2rem;color:var(--white);margin-bottom:.25rem;font-weight:300;">Welcome Back</h2>
+            <p style="font-size:.82rem;margin-bottom:2rem;font-weight:300;">Sign in to your Veloce owner account.</p>
+            <div style="display:grid;gap:1.2rem;">
+              <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:.66rem;letter-spacing:.18em;color:var(--white);margin-bottom:.45rem;">EMAIL ADDRESS</div><input type="email" class="v-input" placeholder="your@email.com"></div>
+              <div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.45rem;"><span style="font-family:'Barlow Condensed',sans-serif;font-size:.66rem;letter-spacing:.18em;color:var(--white);">PASSWORD</span><a href="#" style="font-size:.72rem;color:var(--blue-l);">Forgot?</a></div><input type="password" class="v-input" placeholder="••••••••••"></div>
+              <div style="display:flex;align-items:center;gap:.75rem;"><input type="checkbox" id="rem" style="accent-color:var(--blue);"><label for="rem" style="font-size:.78rem;font-weight:300;cursor:pointer;">Remember me</label></div>
+              <button class="btn btn-p" style="width:100%;padding:1rem;">Sign In</button>
+              <div style="text-align:center;position:relative;"><div style="position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(11,95,255,.14);"></div><span style="position:relative;font-size:.7rem;padding:0 1rem;background:var(--navy);">or continue with</span></div>
+              <button onclick="void(0)" style="width:100%;padding:.9rem;border:1px solid rgba(11,95,255,.2);background:rgba(11,95,255,.04);color:var(--white);font-family:'Barlow Condensed',sans-serif;letter-spacing:.12em;font-size:.76rem;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:.75rem;" onmouseover="this.style.borderColor='rgba(11,95,255,.5)'" onmouseout="this.style.borderColor='rgba(11,95,255,.2)'"><svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+            </div>
+          </div>
+          <div id="form-ca" style="display:none;">
+            <h2 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:2rem;color:var(--white);margin-bottom:.25rem;font-weight:300;">Join Veloce</h2>
+            <p style="font-size:.82rem;margin-bottom:2rem;font-weight:300;">Create your owner account to begin your journey.</p>
+            <div style="display:grid;gap:1.2rem;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;"><div><div style="font-family:'Barlow Condensed',sans-serif;font-size:.66rem;letter-spacing:.18em;color:var(--white);margin-bottom:.45rem;">FIRST NAME</div><input type="text" class="v-input" placeholder="Alessandro"></div><div><div style="font-family:'Barlow Condensed',sans-serif;font-size:.66rem;letter-spacing:.18em;color:var(--white);margin-bottom:.45rem;">LAST NAME</div><input type="text" class="v-input" placeholder="Romano"></div></div>
+              <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:.66rem;letter-spacing:.18em;color:var(--white);margin-bottom:.45rem;">EMAIL ADDRESS</div><input type="email" class="v-input" placeholder="your@email.com"></div>
+              <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:.66rem;letter-spacing:.18em;color:var(--white);margin-bottom:.45rem;">PASSWORD</div><input type="password" class="v-input" placeholder="Min. 8 characters"></div>
+              <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:.66rem;letter-spacing:.18em;color:var(--white);margin-bottom:.45rem;">CONFIRM PASSWORD</div><input type="password" class="v-input" placeholder="••••••••••"></div>
+              <div style="display:flex;align-items:flex-start;gap:.75rem;"><input type="checkbox" style="margin-top:3px;accent-color:var(--blue);"><label style="font-size:.77rem;line-height:1.6;font-weight:300;cursor:pointer;">I agree to Veloce's <a href="#" style="color:var(--blue-l);">Terms</a> and <a href="#" style="color:var(--blue-l);">Privacy Policy</a></label></div>
+              <button class="btn btn-p" style="width:100%;padding:1rem;">Create Account</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="footer-signin"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SHARED FOOTER TEMPLATE
+═══════════════════════════════════════════════════════════════ -->
+<template id="footer-tpl">
+  <footer style="background:var(--navy-l);border-top:1px solid rgba(11,95,255,.1);">
+    <div style="max-width:1200px;margin:0 auto;padding:5rem 2rem 2rem;">
+      <div style="border:1px solid rgba(11,95,255,.14);padding:2rem;display:flex;align-items:center;justify-content:space-between;gap:2rem;margin-bottom:4rem;flex-wrap:wrap;background:rgba(11,95,255,.03);">
+        <div><div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.35rem;color:var(--white);margin-bottom:.2rem;">Stay in the Slipstream</div><div style="font-size:.82rem;font-weight:300;">Exclusive launches, events, and atelier stories.</div></div>
+        <div style="display:flex;gap:0;flex:1;max-width:420px;"><input type="email" placeholder="Your email address" class="v-input" style="flex:1;"><button class="btn btn-p" style="white-space:nowrap;flex-shrink:0;">Subscribe</button></div>
+      </div>
+      <div class="footer-grid" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:2.5rem;margin-bottom:4rem;">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;"><div style="width:20px;height:20px;background:var(--blue);clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);box-shadow:0 0 10px rgba(11,95,255,.5);"></div><span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.05rem;letter-spacing:.28em;color:var(--white);">VELOCE</span></div>
+          <p style="font-size:.8rem;line-height:1.85;font-weight:300;margin-bottom:1.5rem;max-width:240px;">Atelier Automobili. Makers of the world's most exclusive hypercars. Est. Modena, 2009.</p>
+          <div style="display:flex;gap:.85rem;">
+            <a href="#" style="color:var(--mist);transition:color .3s;" onmouseover="this.style.color='var(--blue-l)'" onmouseout="this.style.color='var(--mist)'"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
+            <a href="#" style="color:var(--mist);transition:color .3s;" onmouseover="this.style.color='var(--blue-l)'" onmouseout="this.style.color='var(--mist)'"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+            <a href="#" style="color:var(--mist);transition:color .3s;" onmouseover="this.style.color='var(--blue-l)'" onmouseout="this.style.color='var(--mist)'"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+          </div>
+        </div>
+        <div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.15em;font-size:.7rem;color:var(--white);margin-bottom:1.25rem;text-transform:uppercase;">Models</div><a class="footer-link" onclick="detail('vx1')" style="cursor:pointer;">VX-1 Hypercar</a><a class="footer-link" onclick="detail('sr')" style="cursor:pointer;">SR Supercar</a><a class="footer-link" onclick="detail('gt')" style="cursor:pointer;">GT Series</a><a class="footer-link" onclick="detail('apex')" style="cursor:pointer;">APEX Track</a><a class="footer-link" onclick="go('cars')" style="cursor:pointer;">All Models</a></div>
+        <div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.15em;font-size:.7rem;color:var(--white);margin-bottom:1.25rem;text-transform:uppercase;">Company</div><a class="footer-link" onclick="go('about')" style="cursor:pointer;">About Us</a><a class="footer-link" style="cursor:pointer;">Heritage</a><a class="footer-link" style="cursor:pointer;">Atelier</a><a class="footer-link" style="cursor:pointer;">Careers</a><a class="footer-link" style="cursor:pointer;">Press</a></div>
+        <div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.15em;font-size:.7rem;color:var(--white);margin-bottom:1.25rem;text-transform:uppercase;">Experience</div><a class="footer-link" style="cursor:pointer;">Track Days</a><a class="footer-link" style="cursor:pointer;">Test Drive</a><a class="footer-link" style="cursor:pointer;">Showrooms</a><a class="footer-link" style="cursor:pointer;">Events</a><a class="footer-link" style="cursor:pointer;">Owners Club</a></div>
+        <div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.15em;font-size:.7rem;color:var(--white);margin-bottom:1.25rem;text-transform:uppercase;">Contact</div><a class="footer-link" onclick="go('contact')" style="cursor:pointer;">Enquire</a><a class="footer-link" style="cursor:pointer;">Showrooms</a><a class="footer-link" style="cursor:pointer;">Aftersales</a><a class="footer-link" style="cursor:pointer;">Media</a><a class="footer-link" onclick="go('signin')" style="cursor:pointer;">My Account</a></div>
+      </div>
+      <div style="border-top:1px solid rgba(11,95,255,.1);padding-top:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+        <div style="font-size:.73rem;font-weight:300;opacity:.45;">© 2024 Veloce Automobili S.p.A. All rights reserved.</div>
+        <div style="display:flex;gap:2rem;"><a href="#" style="font-size:.7rem;color:var(--mist);opacity:.45;transition:opacity .3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.45'">Privacy Policy</a><a href="#" style="font-size:.7rem;color:var(--mist);opacity:.45;transition:opacity .3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.45'">Legal Notice</a><a href="#" style="font-size:.7rem;color:var(--mist);opacity:.45;transition:opacity .3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.45'">Cookie Settings</a></div>
+      </div>
+    </div>
+  </footer>
+</template>
+
+<!-- ══════════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════════ -->
+<script>
+// ── CAR DATA ──────────────────────────────────────────────────
+const CARS = {
+  vx1:{name:'Veloce VX-1',sub:'PINNACLE HYPERCAR SERIES',tag:'HYPERCAR',tagX:'LIMITED 12',price:'€2,400,000',ovH:'The Pinnacle of What Is Possible',p1:'The VX-1 is not an evolution. It is a declaration. Built on a 62kg aerospace carbon monocoque, powered by a 6.5-litre naturally-aspirated V12 working in concert with two axial-flux electric motors, the VX-1 deploys 1,050 combined horsepower with a ferocity that defies physics.',p2:'Every surface serves a purpose. Seven active aerodynamic elements generate up to 1,200kg of downforce at 300km/h while simultaneously reducing drag below 0.28cd. This is the paradox only Veloce has solved.',bigStat:'2.3',bigLabel:'SECONDS · 0–100 KM/H',specs:[['Engine Displacement','6,498 cc'],['Configuration','V12 + Twin Electric'],['Max Power','1,050 bhp combined'],['Max Torque','1,100 Nm'],['Gearbox','7-speed DCT'],['Drive','AWD Torque Vectoring'],['Chassis','62kg Carbon Monocoque'],['Front Suspension','Pushrod Double Wishbone'],['Rear Suspension','Pullrod Double Wishbone'],['Brakes','Carbon-Ceramic 410mm'],['Dry Weight','1,180 kg'],['Power-to-Weight','890 bhp/tonne']],glance:[['Engine','6.5L V12 + Dual Electric'],['Power','1,050 BHP'],['Torque','1,100 Nm'],['Gearbox','7-speed DCT'],['Drive','AWD'],['Weight','1,180 kg']],perf:[['0–100 km/h','2.3 sec'],['0–200 km/h','5.1 sec'],['Top Speed','380 km/h'],['Nürburgring','6:28.1']],row:[['Power','1,050 BHP'],['0–100','2.3 sec'],['Top Speed','380 km/h'],['Weight','1,180 kg']]},
+  sr:{name:'Veloce SR',sub:'STREET & TRACK EDITION',tag:'SUPERCAR',price:'From €680,000',ovH:'The Perfect Balance of Road and Race',p1:'The SR is Veloce\'s most versatile masterwork. Built around a lightweight carbon-aluminium hybrid tub, the SR delivers 820 horsepower from a mid-mounted twin-turbocharged V8 — tuned not just for numbers, but for sensation.',p2:'Unlike pure hypercars, the SR exists comfortably on morning commutes and track afternoons in equal measure. Its adaptive suspension reads the road surface 1,000 times per second, adjusting damping in real time.',bigStat:'2.8',bigLabel:'SECONDS · 0–100 KM/H',specs:[['Engine Displacement','3,982 cc'],['Configuration','V8 Twin-Turbo'],['Max Power','820 bhp @ 7,200 rpm'],['Max Torque','880 Nm @ 3,800 rpm'],['Gearbox','8-speed DCT'],['Drive','RWD with LSD'],['Chassis','Carbon-Aluminium Tub'],['Front Suspension','Adaptive Double Wishbone'],['Rear Suspension','Adaptive Multi-Link'],['Brakes','Carbon-Ceramic 380mm'],['Dry Weight','1,290 kg'],['Power-to-Weight','635 bhp/tonne']],glance:[['Engine','4.0L Twin-Turbo V8'],['Power','820 BHP'],['Torque','880 Nm'],['Gearbox','8-speed DCT'],['Drive','RWD'],['Weight','1,290 kg']],perf:[['0–100 km/h','2.8 sec'],['0–200 km/h','6.2 sec'],['Top Speed','340 km/h'],['Nürburgring','6:58.2']],row:[['Power','820 BHP'],['0–100','2.8 sec'],['Top Speed','340 km/h'],['Weight','1,290 kg']]},
+  gt:{name:'Veloce GT',sub:'CONTINENTAL GRAND TOURER',tag:'GRAND TOURER',price:'From €480,000',ovH:'Distance Conquered in Absolute Comfort',p1:'The GT proves that performance and refinement are not opposing forces. Powered by a naturally-aspirated 5.5-litre V10, the GT delivers 650 horsepower with a vocal soundtrack that rewards open roads and mountain passes.',p2:'The interior is upholstered entirely by hand using full-grain leather, hand-polished carbonfibre, and open-pore wood from sustainably managed forests. Nothing borrowed. Everything bespoke.',bigStat:'3.2',bigLabel:'SECONDS · 0–100 KM/H',specs:[['Engine Displacement','5,495 cc'],['Configuration','V10 Naturally Aspirated'],['Max Power','650 bhp @ 8,000 rpm'],['Max Torque','680 Nm @ 5,200 rpm'],['Gearbox','8-speed Automatic'],['Drive','AWD Torque Vectoring'],['Chassis','Aluminium Spaceframe'],['Front Suspension','Adaptive Air'],['Rear Suspension','Adaptive Air'],['Brakes','Cast Iron 365mm'],['Dry Weight','1,480 kg'],['Power-to-Weight','439 bhp/tonne']],glance:[['Engine','5.5L V10 NA'],['Power','650 BHP'],['Torque','680 Nm'],['Gearbox','8-speed Auto'],['Drive','AWD'],['Weight','1,480 kg']],perf:[['0–100 km/h','3.2 sec'],['0–200 km/h','8.1 sec'],['Top Speed','310 km/h'],['Range','620 km']],row:[['Power','650 BHP'],['0–100','3.2 sec'],['Top Speed','310 km/h'],['Weight','1,480 kg']]},
+  apex:{name:'Veloce APEX',sub:'TRACK-ONLY BESPOKE EDITION',tag:'TRACK EDITION',tagX:'BESPOKE',price:'POA',ovH:'Unrestricted. Uncompromised. Undefeated.',p1:'The APEX is the car we built for ourselves. Unencumbered by road regulations, the APEX extracts every last fraction of performance — 1,250 horsepower, slick tyres, and a body sculpted entirely in the wind tunnel.',p2:'Each APEX is commissioned individually. The owner\'s physical measurements, driving style, and track programme form the basis of the build specification. No two APEXes are identical.',bigStat:'1.9',bigLabel:'SECONDS · 0–100 KM/H',specs:[['Engine Displacement','6,498 cc'],['Configuration','V12 + Triple Electric'],['Max Power','1,250 bhp combined'],['Max Torque','1,350 Nm'],['Gearbox','6-speed Sequential'],['Drive','AWD Active Torque Vec.'],['Chassis','Full Carbon Monocoque'],['Front Suspension','FRIC Pullrod Active'],['Rear Suspension','FRIC Pullrod Active'],['Brakes','CC 420mm 8-Pot'],['Dry Weight','980 kg'],['Power-to-Weight','1,275 bhp/tonne']],glance:[['Engine','6.5L V12 + Triple Electric'],['Power','1,250 BHP'],['Torque','1,350 Nm'],['Gearbox','6-speed Sequential'],['Drive','AWD'],['Weight','980 kg']],perf:[['0–100 km/h','1.9 sec'],['0–200 km/h','4.0 sec'],['Top Speed','400+ km/h'],['Nürburgring','6:12.4 ★']],row:[['Power','1,250 BHP'],['0–100','1.9 sec'],['Top Speed','400+ km/h'],['Weight','980 kg']]}
+};
+
+const MODEL_PRICES = {VX1:'€2,400,000',SR:'€680,000',GT:'€480,000',APEX:'POA'};
+
+// ── PAGE ROUTING ──────────────────────────────────────────────
+function go(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const pg = document.getElementById('page-' + id);
+  if (pg) { pg.classList.add('active'); window.scrollTo({top:0,behavior:'instant'}); initReveal(); }
+}
+
+// ── DETAIL PAGE ───────────────────────────────────────────────
+function detail(id) {
+  const c = CARS[id]; if (!c) return;
+  // tag
+  let th = `<span class="b-tag">${c.tag}</span>`;
+  if (c.tagX) th += `<span class="b-tag" style="background:rgba(200,148,0,.85);margin-left:.4rem;">${c.tagX}</span>`;
+  document.getElementById('dTag').innerHTML = th;
+  document.getElementById('dName').textContent = c.name;
+  document.getElementById('dSub').textContent = c.sub;
+  // specs row
+  document.getElementById('dSpecsRow').innerHTML = c.row.map(([l,v])=>`<div><div style="font-family:'Barlow Condensed',sans-serif;font-size:.66rem;letter-spacing:.2em;color:var(--blue-l);margin-bottom:.2rem;">${l}</div><div style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--white);font-weight:300;">${v}</div></div>`).join('');
+  // overview
+  document.getElementById('dOvH').textContent = c.ovH;
+  document.getElementById('dOvP1').textContent = c.p1;
+  document.getElementById('dOvP2').textContent = c.p2;
+  // glance
+  document.getElementById('dGlance').innerHTML = c.glance.map(([k,v])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:.55rem 0;border-bottom:1px solid rgba(11,95,255,.1);"><span style="font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:.12em;color:var(--mist);">${k}</span><span style="font-size:.82rem;color:var(--white);">${v}</span></div>`).join('');
+  // spec table
+  document.getElementById('dSpecTable').innerHTML = c.specs.map(([k,v],i)=>`<div style="padding:.95rem 1.4rem;border-bottom:1px solid rgba(11,95,255,.08);${i%2===0?'border-right:1px solid rgba(11,95,255,.08);':''}display:flex;justify-content:space-between;align-items:center;"><span style="font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:.12em;color:var(--mist);">${k}</span><span style="font-size:.82rem;color:var(--white);">${v}</span></div>`).join('');
+  // perf
+  document.getElementById('dBigStat').textContent = c.bigStat;
+  document.getElementById('dBigLabel').textContent = c.bigLabel;
+  document.getElementById('dPerfStats').innerHTML = c.perf.map(([l,v])=>`<div style="padding:1.2rem 1.4rem;background:rgba(4,8,16,.8);display:flex;justify-content:space-between;align-items:center;"><span style="font-family:'Barlow Condensed',sans-serif;font-size:.74rem;letter-spacing:.14em;color:var(--mist);">${l}</span><span style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--white);font-weight:300;">${v}</span></div>`).join('');
+  // reset tabs
+  ['dov','dsp','dpe','dbe'].forEach((t,i)=>{ const el=document.getElementById(t); if(el) el.style.display=i===0?'block':'none'; });
+  document.querySelectorAll('#page-detail .tab-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+  go('detail');
+}
+
+// ── TAB SWITCHING ─────────────────────────────────────────────
+function switchTab(id, btn) {
+  ['dov','dsp','dpe','dbe'].forEach(t=>{ const el=document.getElementById(t); if(el) el.style.display='none'; });
+  document.getElementById(id).style.display='block';
+  document.querySelectorAll('#page-detail .tab-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+
+// ── AUTH TAB ──────────────────────────────────────────────────
+function authTab(tab) {
+  document.getElementById('form-si').style.display = tab==='si'?'block':'none';
+  document.getElementById('form-ca').style.display = tab==='ca'?'block':'none';
+  document.getElementById('tab-si').classList.toggle('active',tab==='si');
+  document.getElementById('tab-ca').classList.toggle('active',tab==='ca');
+}
+
+// ── MOBILE MENU ───────────────────────────────────────────────
+function openMob(){ document.getElementById('mobPanel').classList.add('open'); document.getElementById('mobOverlay').classList.add('open'); document.body.style.overflow='hidden'; }
+function closeMob(){ document.getElementById('mobPanel').classList.remove('open'); document.getElementById('mobOverlay').classList.remove('open'); document.body.style.overflow=''; }
+
+// ── NAVBAR SCROLL ─────────────────────────────────────────────
+window.addEventListener('scroll',()=>{ document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>60); });
+
+// ── REVEAL ────────────────────────────────────────────────────
+let revealObs;
+function initReveal(){
+  if(revealObs) revealObs.disconnect();
+  revealObs = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('in-view'); });
+  },{threshold:.1});
+  document.querySelectorAll('.reveal').forEach(el=>{ el.classList.remove('in-view'); revealObs.observe(el); });
+}
+
+// ── FILTER ────────────────────────────────────────────────────
+function filterCars(cat, btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>{ b.style.background='transparent'; b.style.color='var(--mist)'; b.style.borderColor='rgba(11,95,255,.2)'; });
+  btn.style.background='var(--blue)'; btn.style.color='white'; btn.style.borderColor='var(--blue)';
+  document.querySelectorAll('.car-item').forEach(el=>{ el.style.display=(cat==='all'||el.dataset.cat===cat)?'':'none'; });
+}
+
+// ── CONFIGURATOR ─────────────────────────────────────────────
+function selectModel(model, btn){
+  document.querySelectorAll('#page-config .config-option[onclick^="selectModel"]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('sum-model').textContent = model.toUpperCase() + ' HYPERCAR';
+  document.getElementById('configModelName').textContent = 'Veloce ' + model;
+  document.getElementById('configModelLabel').textContent = 'VELOCE ' + model;
+  const prices = {'VX-1':'€2,400,000','SR':'€680,000','GT':'€480,000','APEX':'POA'};
+  document.getElementById('sum-price').textContent = prices[model] || '€2,400,000';
+}
+function selectColor(hex, name, el){
+  document.querySelectorAll('.config-swatch').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('configColor').textContent = name.toUpperCase();
+  document.getElementById('sum-color').textContent = name.toUpperCase();
+  const ov = document.getElementById('colorOverlay');
+  ov.style.background = hex; ov.style.opacity = '.35';
+  setTimeout(()=>ov.style.opacity='0',800);
+}
+function selectOpt(btn, type){
+  const siblings = btn.parentElement.querySelectorAll('.config-option');
+  siblings.forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const sumMap = {finish:'sum-finish',interior:'sum-interior',carbon:'sum-carbon',wheel:'sum-wheel'};
+  if(sumMap[type]) document.getElementById(sumMap[type]).textContent = btn.textContent.toUpperCase();
+}
+
+// ── FOOTER CLONING ────────────────────────────────────────────
+function cloneFooters(){
+  const tpl = document.getElementById('footer-tpl');
+  if(!tpl) return;
+  ['footer-home','footer-cars','footer-detail','footer-config','footer-about','footer-contact','footer-signin'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el){ el.innerHTML=''; el.appendChild(tpl.content.cloneNode(true)); }
+  });
+}
+
+// ── LOADER ────────────────────────────────────────────────────
+window.addEventListener('load',()=>{
+  cloneFooters();
+  setTimeout(()=>{
+    document.getElementById('loader').classList.add('hide');
+    initReveal();
+  }, 2200);
+});
+</script>
+</body>
+</html>
